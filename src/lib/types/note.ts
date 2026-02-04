@@ -22,10 +22,10 @@ export const CATEGORY_COLORS: Record<Category, string> = {
 };
 
 export const CATEGORY_ICONS: Record<Category, string> = {
-  todo: '📝',
-  done: '✓',
-  recurring: '🔄',
-  waiting_followup: '⏳'
+  todo: '/svg/todos.svg',
+  done: '/svg/done.svg',
+  recurring: '/svg/recurring.svg',
+  waiting_followup: '/svg/waiting_followup.svg'
 };
 
 export interface Note {

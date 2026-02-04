@@ -36,8 +36,9 @@
 }
 
 .badgeIcon {
-  font-size: var(--font-sm);
-  line-height: 1;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .badgeTodo {
@@ -130,8 +131,9 @@
 }
 
 .categoryIcon {
-  font-size: var(--font-base);
-  line-height: 1;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .title {
@@ -157,4 +159,77 @@
   font-size: var(--font-xs);
   color: var(--color-text-secondary);
   margin-top: var(--spacing-md);
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+}
+
+.modalTitle {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.modalMessage {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.modalActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+}
+
+.modalCancelButton,
+.modalDeleteButton {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.modalCancelButton {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text);
+}
+
+.modalCancelButton:hover {
+  background-color: var(--color-border);
+}
+
+.modalDeleteButton {
+  background-color: var(--color-danger, #ef4444);
+  color: white;
+}
+
+.modalDeleteButton:hover {
+  background-color: #dc2626;
 }

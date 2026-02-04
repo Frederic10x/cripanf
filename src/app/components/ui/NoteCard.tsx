@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Category, CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/types/note';
+import CategoryIcon from './CategoryIcon';
 import styles from './NoteCard.module.css';
 
 interface NoteCardProps {
@@ -32,6 +33,7 @@ export default function NoteCard({
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleClick = () => {
     router.push(`/note/${id}`);
@@ -72,19 +74,20 @@ export default function NoteCard({
     }
   };
 
-  const handleDelete = async (e: React.MouseEvent) => {
+  const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette note ?')) {
-      return;
-    }
+    setShowDeleteModal(true);
+    setShowMenu(false);
+  };
 
+  const confirmDelete = async () => {
     try {
       const response = await fetch(`/api/notes/${id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        setShowMenu(false);
+        setShowDeleteModal(false);
         if (onUpdate) {
           onUpdate();
         }
@@ -94,6 +97,11 @@ export default function NoteCard({
     } catch (error) {
       console.error('Error deleting note:', error);
     }
+  };
+
+  const cancelDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDeleteModal(false);
   };
 
   const getBadgeClass = () => {
@@ -128,48 +136,69 @@ export default function NoteCard({
   };
 
   return (
-    <article className={styles.card} onClick={handleClick}>
-      <div className={styles.cardHeader}>
-        <span className={`${styles.badge} ${getBadgeClass()}`}>
-          <span className={styles.badgeIcon}>{CATEGORY_ICONS[category]}</span>
-          {categoryLabels[category]}
-        </span>
-        <div className={styles.menuWrapper}>
-          <button className={styles.menu} onClick={handleMenuClick}>
-            ⋯
-          </button>
-          {showMenu && (
-            <div className={styles.contextMenu}>
-              <button className={styles.contextMenuItem} onClick={handleRecategorize}>
-                Recatégoriser
+    <>
+      <article className={styles.card} onClick={handleClick}>
+        <div className={styles.cardHeader}>
+          <span className={`${styles.badge} ${getBadgeClass()}`}>
+            <CategoryIcon category={category} className={styles.badgeIcon} />
+            {categoryLabels[category]}
+          </span>
+          <div className={styles.menuWrapper}>
+            <button className={styles.menu} onClick={handleMenuClick}>
+              ⋯
+            </button>
+            {showMenu && (
+              <div className={styles.contextMenu}>
+                <button className={styles.contextMenuItem} onClick={handleRecategorize}>
+                  Recatégoriser
+                </button>
+                <button className={styles.contextMenuItem} onClick={handleDelete}>
+                  Supprimer
+                </button>
+              </div>
+            )}
+            {showCategoryMenu && (
+              <div className={styles.contextMenu}>
+                {(Object.keys(CATEGORY_LABELS) as Category[]).map((cat) => (
+                  <button
+                    key={cat}
+                    className={`${styles.contextMenuItem} ${cat === category ? styles.contextMenuItemActive : ""}`}
+                    onClick={(e) => handleCategoryChange(e, cat)}
+                  >
+                    <CategoryIcon category={cat} className={styles.categoryIcon} />
+                    {CATEGORY_LABELS[cat]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <h3 className={styles.title}>{title}</h3>
+
+        <p className={styles.excerpt}>{excerpt}</p>
+
+        <time className={styles.date}>{formatDate(updatedAt)}</time>
+      </article>
+
+      {showDeleteModal && (
+        <div className={styles.modalOverlay} onClick={cancelDelete}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>Confirmer la suppression</h3>
+            <p className={styles.modalMessage}>
+              Êtes-vous sûr de vouloir supprimer cette note ? Cette action est irréversible.
+            </p>
+            <div className={styles.modalActions}>
+              <button className={styles.modalCancelButton} onClick={cancelDelete}>
+                Annuler
               </button>
-              <button className={styles.contextMenuItem} onClick={handleDelete}>
+              <button className={styles.modalDeleteButton} onClick={confirmDelete}>
                 Supprimer
               </button>
             </div>
-          )}
-          {showCategoryMenu && (
-            <div className={styles.contextMenu}>
-              {(Object.keys(CATEGORY_LABELS) as Category[]).map((cat) => (
-                <button
-                  key={cat}
-                  className={`${styles.contextMenuItem} ${cat === category ? styles.contextMenuItemActive : ""}`}
-                  onClick={(e) => handleCategoryChange(e, cat)}
-                >
-                  <span className={styles.categoryIcon}>{CATEGORY_ICONS[cat]}</span>
-                  {CATEGORY_LABELS[cat]}
-                </button>
-              ))}
-            </div>
-          )}
+          </div>
         </div>
-      </div>
-
-      <h3 className={styles.title}>{title}</h3>
-
-      <p className={styles.excerpt}>{excerpt}</p>
-
-      <time className={styles.date}>{formatDate(updatedAt)}</time>
-    </article>
+      )}
+    </>
   );
 }
