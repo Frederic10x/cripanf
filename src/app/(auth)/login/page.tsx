@@ -1,0 +1,146 @@
+'use client';
+
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import styles from './login.module.css';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+
+    // Validation
+    if (!email || !password) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError('Veuillez entrer une adresse email valide');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError('Email ou mot de passe incorrect');
+        return;
+      }
+
+      router.push('/dashboard');
+    } catch (err) {
+      setError('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.logo}>
+          <div className={styles.logoIcon}>📝</div>
+          <span className={styles.logoText}>Cripani'</span>
+        </div>
+      </header>
+
+      <main className={styles.main}>
+        <div className={styles.card}>
+          <div className={styles.iconWrapper}>
+            <div className={styles.icon}>📝</div>
+          </div>
+
+          <h1 className={styles.title}>Bienvenue</h1>
+          <p className={styles.subtitle}>
+            Accédez à votre espace de catégorisation IA
+          </p>
+
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <div className={styles.formGroup}>
+              <label htmlFor="email" className={styles.label}>
+                Email
+              </label>
+              <div className={styles.inputWrapper}>
+                <span className={styles.inputIcon}>✉️</span>
+                <input
+                  id="email"
+                  type="email"
+                  className={styles.input}
+                  placeholder="cripani@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="password" className={styles.label}>
+                Mot de passe
+              </label>
+              <div className={styles.inputWrapper}>
+                <span className={styles.inputIcon}>🔒</span>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  className={styles.input}
+                  placeholder="mot de passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className={styles.passwordToggle}
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                >
+                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                </button>
+              </div>
+            </div>
+
+            {error && <div className={styles.error}>{error}</div>}
+
+            <button
+              type="submit"
+              className={styles.button}
+              disabled={loading}
+            >
+              {loading ? 'Connexion...' : 'Se connecter'}
+            </button>
+          </form>
+        </div>
+      </main>
+
+      <footer className={styles.footer}>
+        © 2026 App de notes. Design et app par Frédéric Ferreira
+      </footer>
+    </div>
+  );
+}
