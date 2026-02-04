@@ -237,6 +237,7 @@
   gap: var(--spacing-sm);
   padding: 0 var(--spacing-md) var(--spacing-md);
   scrollbar-width: none;
+  max-width: 100%;
 }
 
 .categoryPills::-webkit-scrollbar {
@@ -351,6 +352,8 @@
 @media (max-width: 768px) {
   .container {
     padding-bottom: 80px;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   .header {
@@ -371,6 +374,7 @@
 
   .categoryPills {
     display: flex;
+    width: 100%;
   }
 
   .actions {
