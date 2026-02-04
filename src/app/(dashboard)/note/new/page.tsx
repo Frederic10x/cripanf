@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import ProgressBar from '@/app/components/ui/ProgressBar';
+import MobileNav from '@/app/components/ui/MobileNav';
 import styles from './new-note.module.css';
 
 export default function NewNotePage() {
@@ -132,42 +133,51 @@ export default function NewNotePage() {
   };
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <nav className={styles.nav}>
-          <Link href="/note/new" className={styles.navLink}>
-            Nouvelle note
-          </Link>
-          <Link href="/dashboard" className={styles.navLink}>
-            Dashboard
-          </Link>
-        </nav>
-        <div className={styles.headerActions}>
-          <button
-            className={styles.backButton}
-            onClick={() => router.push('/dashboard')}
-            disabled={loading}
-          >
-            ← Retour
-          </button>
-          <button
-            className={styles.saveButton}
-            onClick={handleSave}
-            disabled={content.trim().length < 3 || loading}
-          >
-            Sauvegarder
-          </button>
-          <div className={styles.profile}>
-            <Image
-              src="/svg/profile.svg"
-              alt="Profile"
-              width={32}
-              height={32}
-              className={styles.profileIcon}
-            />
+    <>
+      <div className={styles.container}>
+        {/* Desktop Header */}
+        <header className={styles.header}>
+          <nav className={styles.nav}>
+            <Link href="/note/new" className={styles.navLink}>
+              Nouvelle note
+            </Link>
+            <Link href="/dashboard" className={styles.navLink}>
+              Dashboard
+            </Link>
+          </nav>
+          <div className={styles.headerActions}>
+            <button
+              className={styles.backButton}
+              onClick={() => router.push('/dashboard')}
+              disabled={loading}
+            >
+              ← Retour
+            </button>
+            <button
+              className={styles.saveButton}
+              onClick={handleSave}
+              disabled={content.trim().length < 3 || loading}
+            >
+              Sauvegarder
+            </button>
+            <div className={styles.profile}>
+              <Image
+                src="/svg/profile.svg"
+                alt="Profile"
+                width={32}
+                height={32}
+                className={styles.profileIcon}
+              />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+
+        {/* Mobile Header */}
+        <header className={styles.mobileHeader}>
+          <div className={styles.mobileHeaderLogo}>
+            Cripan<mark>f</mark>
+          </div>
+        </header>
 
       <div className={styles.content}>
         <div className={styles.titleSection}>
@@ -191,18 +201,22 @@ export default function NewNotePage() {
         />
       </div>
 
-      <button
-        className={styles.micButton}
-        title="Enregistrement vocal"
-        disabled={loading}
-      >
-        <Image
-          src="/svg/mic.svg"
-          alt="Microphone"
-          width={24}
-          height={24}
-        />
-      </button>
-    </div>
+        <button
+          className={styles.micButton}
+          title="Enregistrement vocal"
+          disabled={loading}
+        >
+          <Image
+            src="/svg/mic.svg"
+            alt="Microphone"
+            width={24}
+            height={24}
+          />
+        </button>
+      </div>
+
+      {/* Mobile Navigation */}
+      <MobileNav />
+    </>
   );
 }

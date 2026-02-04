@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Note, Category, CATEGORIES, CATEGORY_LABELS } from '@/lib/types/note';
 import CategoryBadge from '@/app/components/ui/CategoryBadge';
+import MobileNav from '@/app/components/ui/MobileNav';
 import styles from './note-detail.module.css';
 
 export default function NoteDetailPage({
@@ -178,26 +179,35 @@ export default function NoteDetailPage({
   }
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <nav className={styles.nav}>
-          <Link href="/note/new" className={styles.navLink}>
-            Nouvelle note
-          </Link>
-          <Link href="/dashboard" className={styles.navLink}>
-            Dashboard
-          </Link>
-        </nav>
-        <div className={styles.profile}>
-          <Image
-            src="/svg/profile.svg"
-            alt="Profile"
-            width={32}
-            height={32}
-            className={styles.profileIcon}
-          />
-        </div>
-      </header>
+    <>
+      <div className={styles.container}>
+        {/* Desktop Header */}
+        <header className={styles.header}>
+          <nav className={styles.nav}>
+            <Link href="/note/new" className={styles.navLink}>
+              Nouvelle note
+            </Link>
+            <Link href="/dashboard" className={styles.navLink}>
+              Dashboard
+            </Link>
+          </nav>
+          <div className={styles.profile}>
+            <Image
+              src="/svg/profile.svg"
+              alt="Profile"
+              width={32}
+              height={32}
+              className={styles.profileIcon}
+            />
+          </div>
+        </header>
+
+        {/* Mobile Header */}
+        <header className={styles.mobileHeader}>
+          <div className={styles.mobileHeaderLogo}>
+            Cripan<mark>f</mark>
+          </div>
+        </header>
 
       <div className={styles.content}>
         <main className={styles.main}>
@@ -333,28 +343,32 @@ export default function NoteDetailPage({
         </aside>
       </div>
 
-      {showDeleteModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h3 className={styles.modalTitle}>Êtes-vous sûr ?</h3>
-            <p className={styles.modalText}>
-              Cette action est irréversible. La note sera définitivement
-              supprimée.
-            </p>
-            <div className={styles.modalActions}>
-              <button
-                className={styles.modalCancelButton}
-                onClick={() => setShowDeleteModal(false)}
-              >
-                Annuler
-              </button>
-              <button className={styles.modalDeleteButton} onClick={handleDelete}>
-                Supprimer
-              </button>
+        {showDeleteModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+              <h3 className={styles.modalTitle}>Êtes-vous sûr ?</h3>
+              <p className={styles.modalText}>
+                Cette action est irréversible. La note sera définitivement
+                supprimée.
+              </p>
+              <div className={styles.modalActions}>
+                <button
+                  className={styles.modalCancelButton}
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Annuler
+                </button>
+                <button className={styles.modalDeleteButton} onClick={handleDelete}>
+                  Supprimer
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+
+      {/* Mobile Navigation */}
+      <MobileNav />
+    </>
   );
 }

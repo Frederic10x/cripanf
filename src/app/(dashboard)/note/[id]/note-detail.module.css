@@ -1,6 +1,7 @@
 .container {
   min-height: 100vh;
   background: var(--color-bg-secondary);
+  padding-bottom: 80px;
 }
 
 .loading {
@@ -12,7 +13,7 @@
   color: var(--color-text-secondary);
 }
 
-/* Header */
+/* Desktop Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -23,6 +24,25 @@
   position: sticky;
   top: 0;
   z-index: 100;
+}
+
+/* Mobile Header */
+.mobileHeader {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.mobileHeaderLogo {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--color-text);
 }
 
 .nav {
@@ -407,7 +427,11 @@
 
 @media (max-width: 768px) {
   .header {
-    padding: var(--spacing-md);
+    display: none;
+  }
+
+  .mobileHeader {
+    display: flex;
   }
 
   .content {
