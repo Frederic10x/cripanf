@@ -158,7 +158,7 @@
 .date {
   font-size: var(--font-xs);
   color: var(--color-text-secondary);
-  margin-top: var(--spacing-md);
+  margin-top: auto;
 }
 
 .modalOverlay {

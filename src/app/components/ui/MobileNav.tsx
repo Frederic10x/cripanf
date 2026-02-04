@@ -1,13 +1,44 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import styles from './MobileNav.module.css';
 
 export default function MobileNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const isDashboard = pathname === '/dashboard';
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileMenu]);
+
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
 
   return (
     <nav className={styles.nav}>
@@ -41,16 +72,31 @@ export default function MobileNav() {
         </svg>
       </Link>
 
-      <button className={styles.item}>
-        <Image
-          src="/svg/profile.svg"
-          alt="Profile"
-          width={24}
-          height={24}
-          className={styles.icon}
-        />
-        <span className={styles.label}>Profile</span>
-      </button>
+      <div className={styles.profileWrapper} ref={profileMenuRef}>
+        <button
+          className={styles.item}
+          onClick={() => setShowProfileMenu(!showProfileMenu)}
+        >
+          <Image
+            src="/svg/profile.svg"
+            alt="Profile"
+            width={24}
+            height={24}
+            className={styles.icon}
+          />
+          <span className={styles.label}>Profile</span>
+        </button>
+        {showProfileMenu && (
+          <div className={styles.profileMenu}>
+            <button
+              className={styles.profileMenuItem}
+              onClick={handleLogout}
+            >
+              Se déconnecter
+            </button>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }

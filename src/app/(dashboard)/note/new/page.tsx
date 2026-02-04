@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import ProgressBar from '@/app/components/ui/ProgressBar';
 import MobileNav from '@/app/components/ui/MobileNav';
+import { createClient } from '@/lib/supabase/client';
 import styles from './new-note.module.css';
 
 export default function NewNotePage() {
@@ -14,8 +15,10 @@ export default function NewNotePage() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const currentDate = new Date().toLocaleDateString('fr-FR', {
     day: '2-digit',
@@ -29,6 +32,22 @@ export default function NewNotePage() {
       if (progressTimerRef.current) clearTimeout(progressTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileMenu]);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
@@ -132,6 +151,16 @@ export default function NewNotePage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   return (
     <>
       <div className={styles.container}>
@@ -160,14 +189,26 @@ export default function NewNotePage() {
             >
               Sauvegarder
             </button>
-            <div className={styles.profile}>
+            <div className={styles.profile} ref={profileMenuRef}>
               <Image
                 src="/svg/profile.svg"
                 alt="Profile"
                 width={32}
                 height={32}
                 className={styles.profileIcon}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                style={{ cursor: "pointer" }}
               />
+              {showProfileMenu && (
+                <div className={styles.profileMenu}>
+                  <button
+                    className={styles.profileMenuItem}
+                    onClick={handleLogout}
+                  >
+                    Se déconnecter
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

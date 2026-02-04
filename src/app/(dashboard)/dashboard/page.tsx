@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SearchBar from "../../components/ui/SearchBar";
 import NoteCard from "../../components/ui/NoteCard";
 import NoteRow from "../../components/ui/NoteRow";
 import MobileNav from "../../components/ui/MobileNav";
 import { useDashboard } from "../DashboardContext";
 import { Note, Category } from "@/lib/types/note";
+import { createClient } from "@/lib/supabase/client";
 import styles from "./dashboard.module.css";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [notes, setNotes] = useState<Note[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +25,8 @@ export default function DashboardPage() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [showLayoutMenu, setShowLayoutMenu] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchNotes();
@@ -30,6 +35,22 @@ export default function DashboardPage() {
   useEffect(() => {
     filterNotes();
   }, [notes, selectedCategory, searchQuery, mobileCategory, sortOrder]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileMenu]);
 
   const fetchNotes = async () => {
     try {
@@ -98,6 +119,16 @@ export default function DashboardPage() {
     setSearchQuery("");
   };
 
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   const categories: { id: string; label: string; value: Category | null }[] = [
     { id: "all", label: "Toutes", value: null },
     { id: "todo", label: "À faire", value: "todo" },
@@ -130,14 +161,26 @@ export default function DashboardPage() {
               Dashboard
             </Link>
           </nav>
-          <div className={styles.profile}>
+          <div className={styles.profile} ref={profileMenuRef}>
             <img
               src="/svg/profile.svg"
               alt="Profile"
               width={32}
               height={32}
               className={styles.profileIcon}
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              style={{ cursor: "pointer" }}
             />
+            {showProfileMenu && (
+              <div className={styles.profileMenu}>
+                <button
+                  className={styles.profileMenuItem}
+                  onClick={handleLogout}
+                >
+                  Se déconnecter
+                </button>
+              </div>
+            )}
           </div>
         </header>
 

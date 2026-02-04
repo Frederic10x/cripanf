@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Note, Category, CATEGORIES, CATEGORY_LABELS } from '@/lib/types/note';
 import CategoryBadge from '@/app/components/ui/CategoryBadge';
 import MobileNav from '@/app/components/ui/MobileNav';
+import { createClient } from '@/lib/supabase/client';
 import styles from './note-detail.module.css';
 
 export default function NoteDetailPage({
@@ -23,6 +24,8 @@ export default function NoteDetailPage({
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [noteId, setNoteId] = useState<string>('');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -30,6 +33,22 @@ export default function NoteDetailPage({
       fetchNote(resolvedParams.id);
     });
   }, [params]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileMenu]);
 
   const fetchNote = async (id: string) => {
     try {
@@ -138,6 +157,16 @@ export default function NoteDetailPage({
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
@@ -191,14 +220,26 @@ export default function NoteDetailPage({
               Dashboard
             </Link>
           </nav>
-          <div className={styles.profile}>
+          <div className={styles.profile} ref={profileMenuRef}>
             <Image
               src="/svg/profile.svg"
               alt="Profile"
               width={32}
               height={32}
               className={styles.profileIcon}
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              style={{ cursor: "pointer" }}
             />
+            {showProfileMenu && (
+              <div className={styles.profileMenu}>
+                <button
+                  className={styles.profileMenuItem}
+                  onClick={handleLogout}
+                >
+                  Se déconnecter
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
