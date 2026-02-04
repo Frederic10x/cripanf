@@ -1,7 +1,5 @@
 .searchContainer {
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
 }
 
 .searchWrapper {
@@ -34,7 +32,6 @@
 
 .searchInput:focus {
   outline: none;
-  background-color: var(--color-bg);
   box-shadow: var(--shadow-sm);
 }
 

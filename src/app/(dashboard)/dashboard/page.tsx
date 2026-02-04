@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import SearchBar from '../../components/ui/SearchBar';
-import NoteCard from '../../components/ui/NoteCard';
-import NoteRow from '../../components/ui/NoteRow';
-import MobileNav from '../../components/ui/MobileNav';
-import { useDashboard } from '../DashboardContext';
-import { Note, Category } from '@/lib/types/note';
-import styles from './dashboard.module.css';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import SearchBar from "../../components/ui/SearchBar";
+import NoteCard from "../../components/ui/NoteCard";
+import NoteRow from "../../components/ui/NoteRow";
+import MobileNav from "../../components/ui/MobileNav";
+import { useDashboard } from "../DashboardContext";
+import { Note, Category } from "@/lib/types/note";
+import styles from "./dashboard.module.css";
 
 export default function DashboardPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const { selectedCategory, setSelectedCategory } = useDashboard();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [mobileCategory, setMobileCategory] = useState<Category | null>(null);
 
@@ -29,15 +29,15 @@ export default function DashboardPage() {
 
   const fetchNotes = async () => {
     try {
-      const response = await fetch('/api/notes');
+      const response = await fetch("/api/notes");
       if (response.ok) {
         const data = await response.json();
         setNotes(data.notes || []);
       } else {
-        console.error('Failed to fetch notes');
+        console.error("Failed to fetch notes");
       }
     } catch (error) {
-      console.error('Error fetching notes:', error);
+      console.error("Error fetching notes:", error);
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ export default function DashboardPage() {
       filtered = filtered.filter(
         (note) =>
           note.title.toLowerCase().includes(query) ||
-          note.content.toLowerCase().includes(query)
+          note.content.toLowerCase().includes(query),
       );
     }
 
@@ -71,7 +71,7 @@ export default function DashboardPage() {
 
   const getExcerpt = (content: string, maxLength: number = 120) => {
     if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
+    return content.substring(0, maxLength) + "...";
   };
 
   const handleMobileCategoryChange = (category: Category | null) => {
@@ -84,15 +84,15 @@ export default function DashboardPage() {
 
   const handleSearchModalClose = () => {
     setIsSearchModalOpen(false);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   const categories: { id: string; label: string; value: Category | null }[] = [
-    { id: 'all', label: 'Toutes', value: null },
-    { id: 'todo', label: 'À faire', value: 'todo' },
-    { id: 'done', label: 'Fait', value: 'done' },
-    { id: 'recurring', label: 'Tâches cycliques', value: 'recurring' },
-    { id: 'waiting', label: 'Attente', value: 'waiting_followup' },
+    { id: "all", label: "Toutes", value: null },
+    { id: "todo", label: "À faire", value: "todo" },
+    { id: "done", label: "Fait", value: "done" },
+    { id: "recurring", label: "Tâches cycliques", value: "recurring" },
+    { id: "waiting", label: "Attente", value: "waiting_followup" },
   ];
 
   if (loading) {
@@ -108,12 +108,33 @@ export default function DashboardPage() {
       <div className={styles.container}>
         {/* Desktop Header */}
         <header className={styles.header}>
-          <SearchBar onSearch={handleSearch} />
+          <div className={styles.searchWrapper}>
+            <SearchBar onSearch={handleSearch} />
+          </div>
+          <nav className={styles.nav}>
+            <Link href="/note/new" className={styles.navLink}>
+              Nouvelle note
+            </Link>
+            <Link href="/dashboard" className={styles.navLink}>
+              Dashboard
+            </Link>
+          </nav>
+          <div className={styles.profile}>
+            <img
+              src="/svg/profile.svg"
+              alt="Profile"
+              width={32}
+              height={32}
+              className={styles.profileIcon}
+            />
+          </div>
         </header>
 
         {/* Mobile Header */}
         <header className={styles.mobileHeader}>
-          <div className={styles.mobileHeaderLogo}>Cripan'</div>
+          <div className={styles.mobileHeaderLogo}>
+            Cripan<mark>f</mark>
+          </div>
           <button
             className={styles.mobileHeaderSearch}
             onClick={handleSearchModalOpen}
@@ -152,7 +173,7 @@ export default function DashboardPage() {
             <button
               key={cat.id}
               className={`${styles.categoryPill} ${
-                mobileCategory === cat.value ? styles.categoryPillActive : ''
+                mobileCategory === cat.value ? styles.categoryPillActive : ""
               }`}
               onClick={() => handleMobileCategoryChange(cat.value)}
             >
@@ -167,8 +188,8 @@ export default function DashboardPage() {
             <div className={styles.emptyIcon}>📝</div>
             <p className={styles.emptyText}>
               {searchQuery || selectedCategory || mobileCategory
-                ? 'Aucune note trouvée'
-                : 'Aucune note pour le moment'}
+                ? "Aucune note trouvée"
+                : "Aucune note pour le moment"}
             </p>
           </div>
         ) : (
@@ -215,7 +236,7 @@ export default function DashboardPage() {
       {/* Search Modal */}
       <div
         className={`${styles.searchModal} ${
-          isSearchModalOpen ? styles.searchModalActive : ''
+          isSearchModalOpen ? styles.searchModalActive : ""
         }`}
       >
         <div className={styles.searchModalHeader}>

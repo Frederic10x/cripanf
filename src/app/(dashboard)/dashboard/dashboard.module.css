@@ -1,18 +1,71 @@
 .container {
   min-height: 100vh;
-  padding: var(--spacing-xl);
+  padding: 0;
+  background: var(--color-bg-secondary);
 }
 
 .header {
-  margin-bottom: var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.searchWrapper {
+  flex: 1;
+  max-width: 400px;
+  min-width: 200px;
+}
+
+.nav {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-left: auto;
+}
+
+.navLink {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--color-primary);
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+}
+
+.profileIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 .titleSection {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: var(--spacing-xl);
-  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+  background: var(--color-bg-secondary);
 }
 
 .titleContent {
@@ -59,6 +112,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-md);
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
 }
 
 @media (max-width: 1024px) {
@@ -114,6 +168,7 @@
   justify-content: center;
   min-height: 400px;
   gap: var(--spacing-md);
+  padding: var(--spacing-xl);
 }
 
 .emptyIcon {
@@ -268,10 +323,33 @@
   overflow-y: auto;
 }
 
+/* Tablet Media Queries */
+@media (max-width: 1024px) {
+  .header {
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+
+  .searchWrapper {
+    max-width: 300px;
+  }
+
+  .nav {
+    gap: var(--spacing-md);
+  }
+
+  .titleSection {
+    padding: var(--spacing-lg);
+  }
+
+  .grid {
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+  }
+}
+
 /* Mobile Media Queries */
 @media (max-width: 768px) {
   .container {
-    padding: 0;
     padding-bottom: 80px;
   }
 

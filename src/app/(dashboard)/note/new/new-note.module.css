@@ -84,8 +84,8 @@
 }
 
 .profileIcon {
-  width: 40px;
-  height: 40px;
+  width: 33px;
+  height: 33px;
   border-radius: 50%;
   background: var(--color-bg-secondary);
   display: flex;

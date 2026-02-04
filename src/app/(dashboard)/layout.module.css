@@ -4,7 +4,7 @@
 }
 
 .main {
-  margin-left: 300px;
+  margin-left: 250px;
   flex: 1;
   background-color: var(--color-bg-secondary);
 }
