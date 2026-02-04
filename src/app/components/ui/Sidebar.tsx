@@ -61,7 +61,7 @@ export default function Sidebar({ onCategoryChange }: SidebarProps) {
       </div>
 
       <nav className={styles.section}>
-        <h2 className={styles.sectionTitle}>Espace</h2>
+        <h2 className={styles.sectionTitle}>Espace de travail</h2>
         <ul className={styles.list}>
           {menuItems.map((item) => {
             const IconComponent = item.icon;

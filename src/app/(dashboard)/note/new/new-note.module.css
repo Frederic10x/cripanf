@@ -27,6 +27,19 @@
   z-index: 100;
 }
 
+.logoIcon {
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
 .mobileHeaderLogo {
   font-size: var(--font-lg);
   font-weight: 700;
@@ -173,7 +186,6 @@
 
 .textarea {
   width: 100%;
-  min-height: 400px;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -183,6 +195,12 @@
   color: var(--color-text);
   resize: vertical;
   transition: border-color 0.2s;
+  min-height: 300px;
+  max-height: 300px;
+
+  @media (width > 992px) {
+    min-height: 300px;
+  }
 }
 
 .textarea:focus {
@@ -202,7 +220,7 @@
 
 .micButton {
   position: fixed;
-  bottom: 24px;
+  top: 124px;
   right: 24px;
   width: 56px;
   height: 56px;
@@ -216,6 +234,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (width > 992px) {
+    top: auto;
+    bottom: 24px;
+    right: 24px;
+  }
 }
 
 .micButton:hover:not(:disabled) {
@@ -235,7 +259,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 4px 12px rgba(231, 76, 60, 0.5);
   }
   50% {

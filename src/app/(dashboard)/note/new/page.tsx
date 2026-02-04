@@ -188,7 +188,7 @@ export default function NewNotePage() {
 
     if (!SpeechRecognition) {
       alert(
-        "La reconnaissance vocale n'est pas supportée par votre navigateur"
+        "La reconnaissance vocale n'est pas supportée par votre navigateur",
       );
       return;
     }
@@ -297,6 +297,13 @@ export default function NewNotePage() {
           <div className={styles.mobileHeaderLogo}>
             Cripan<mark>f</mark>
           </div>
+          <button
+            className={styles.saveButton}
+            onClick={handleSave}
+            disabled={content.trim().length < 3 || loading}
+          >
+            Sauvegarder
+          </button>
         </header>
 
         <div className={styles.content}>
@@ -323,7 +330,9 @@ export default function NewNotePage() {
 
         <button
           className={`${styles.micButton} ${isRecording ? styles.recording : ""}`}
-          title={isRecording ? "Arrêter l'enregistrement" : "Enregistrement vocal"}
+          title={
+            isRecording ? "Arrêter l'enregistrement" : "Enregistrement vocal"
+          }
           disabled={loading}
           onClick={toggleVoiceRecording}
         >
