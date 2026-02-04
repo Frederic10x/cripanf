@@ -1,0 +1,24 @@
+{
+  "model": "claude-sonnet-4-5-20250929",
+  "thinking": {
+    "enabled": true,
+    "mode": "normal"
+  },
+  "mcp": {
+    "enabled": false,
+    "servers": {}
+  },
+  "permissions": {
+    "read": [
+      "src/**/*",
+      "public/**/*",
+      ".env",
+      "package.json",
+      "tsconfig.json"
+    ],
+    "write": ["src/**/*", "public/**/*"],
+    "execute": ["npm", "git"]
+  },
+  "maxTokens": 8000,
+  "temperature": 0.3
+}
