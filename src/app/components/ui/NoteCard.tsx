@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Category } from '@/lib/types/note';
+import { Category, CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/types/note';
 import styles from './NoteCard.module.css';
 
 interface NoteCardProps {
@@ -10,6 +11,7 @@ interface NoteCardProps {
   excerpt: string;
   category: Category;
   updatedAt: string;
+  onUpdate?: () => void;
 }
 
 const categoryLabels: Record<Category, string> = {
@@ -25,8 +27,11 @@ export default function NoteCard({
   excerpt,
   category,
   updatedAt,
+  onUpdate,
 }: NoteCardProps) {
   const router = useRouter();
+  const [showMenu, setShowMenu] = useState(false);
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
 
   const handleClick = () => {
     router.push(`/note/${id}`);
@@ -34,7 +39,61 @@ export default function NoteCard({
 
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Open menu
+    setShowMenu(!showMenu);
+  };
+
+  const handleRecategorize = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowCategoryMenu(true);
+    setShowMenu(false);
+  };
+
+  const handleCategoryChange = async (e: React.MouseEvent, newCategory: Category) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch(`/api/notes/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ category: newCategory }),
+      });
+
+      if (response.ok) {
+        setShowCategoryMenu(false);
+        if (onUpdate) {
+          onUpdate();
+        }
+      } else {
+        console.error('Failed to update note category');
+      }
+    } catch (error) {
+      console.error('Error updating note category:', error);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette note ?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/notes/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setShowMenu(false);
+        if (onUpdate) {
+          onUpdate();
+        }
+      } else {
+        console.error('Failed to delete note');
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error);
+    }
   };
 
   const getBadgeClass = () => {
@@ -72,11 +131,38 @@ export default function NoteCard({
     <article className={styles.card} onClick={handleClick}>
       <div className={styles.cardHeader}>
         <span className={`${styles.badge} ${getBadgeClass()}`}>
+          <span className={styles.badgeIcon}>{CATEGORY_ICONS[category]}</span>
           {categoryLabels[category]}
         </span>
-        <button className={styles.menu} onClick={handleMenuClick}>
-          ⋯
-        </button>
+        <div className={styles.menuWrapper}>
+          <button className={styles.menu} onClick={handleMenuClick}>
+            ⋯
+          </button>
+          {showMenu && (
+            <div className={styles.contextMenu}>
+              <button className={styles.contextMenuItem} onClick={handleRecategorize}>
+                Recatégoriser
+              </button>
+              <button className={styles.contextMenuItem} onClick={handleDelete}>
+                Supprimer
+              </button>
+            </div>
+          )}
+          {showCategoryMenu && (
+            <div className={styles.contextMenu}>
+              {(Object.keys(CATEGORY_LABELS) as Category[]).map((cat) => (
+                <button
+                  key={cat}
+                  className={`${styles.contextMenuItem} ${cat === category ? styles.contextMenuItemActive : ""}`}
+                  onClick={(e) => handleCategoryChange(e, cat)}
+                >
+                  <span className={styles.categoryIcon}>{CATEGORY_ICONS[cat]}</span>
+                  {CATEGORY_LABELS[cat]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <h3 className={styles.title}>{title}</h3>

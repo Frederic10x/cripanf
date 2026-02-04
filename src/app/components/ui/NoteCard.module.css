@@ -30,6 +30,14 @@
   padding: 4px 8px;
   border-radius: 4px;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badgeIcon {
+  font-size: var(--font-sm);
+  line-height: 1;
 }
 
 .badgeTodo {
@@ -52,6 +60,10 @@
   color: var(--category-waiting);
 }
 
+.menuWrapper {
+  position: relative;
+}
+
 .menu {
   background: none;
   border: none;
@@ -71,6 +83,55 @@
 .menu:hover {
   background-color: var(--color-bg-secondary);
   color: var(--color-text);
+}
+
+.contextMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  min-width: 160px;
+  z-index: 1000;
+}
+
+.contextMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.contextMenuItem:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.contextMenuItem:first-child {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.contextMenuItem:last-child {
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.contextMenuItemActive {
+  background-color: rgba(255, 101, 66, 0.1);
+  color: var(--color-primary);
+}
+
+.categoryIcon {
+  font-size: var(--font-base);
+  line-height: 1;
 }
 
 .title {

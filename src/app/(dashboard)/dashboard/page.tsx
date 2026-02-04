@@ -18,6 +18,10 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [mobileCategory, setMobileCategory] = useState<Category | null>(null);
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [layout, setLayout] = useState<"grid" | "list">("grid");
+  const [showLayoutMenu, setShowLayoutMenu] = useState(false);
 
   useEffect(() => {
     fetchNotes();
@@ -25,7 +29,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     filterNotes();
-  }, [notes, selectedCategory, searchQuery, mobileCategory]);
+  }, [notes, selectedCategory, searchQuery, mobileCategory, sortOrder]);
 
   const fetchNotes = async () => {
     try {
@@ -61,6 +65,13 @@ export default function DashboardPage() {
           note.content.toLowerCase().includes(query),
       );
     }
+
+    // Sort by creation date
+    filtered = [...filtered].sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+    });
 
     setFilteredNotes(filtered);
   };
@@ -152,14 +163,68 @@ export default function DashboardPage() {
             <p className={styles.subtitle}>Catégorisées par l'IA</p>
           </div>
           <div className={styles.actions}>
-            <button className={styles.actionButton}>
-              <span>⇅</span>
-              <span>Trier</span>
-            </button>
-            <button className={styles.actionButton}>
-              <span>⊞</span>
-              <span>Présentation</span>
-            </button>
+            <div className={styles.actionWrapper}>
+              <button
+                className={styles.actionButton}
+                onClick={() => setShowSortMenu(!showSortMenu)}
+              >
+                <span>⇅</span>
+                <span>Trier</span>
+              </button>
+              {showSortMenu && (
+                <div className={styles.dropdownMenu}>
+                  <button
+                    className={`${styles.dropdownItem} ${sortOrder === "desc" ? styles.dropdownItemActive : ""}`}
+                    onClick={() => {
+                      setSortOrder("desc");
+                      setShowSortMenu(false);
+                    }}
+                  >
+                    Plus récent
+                  </button>
+                  <button
+                    className={`${styles.dropdownItem} ${sortOrder === "asc" ? styles.dropdownItemActive : ""}`}
+                    onClick={() => {
+                      setSortOrder("asc");
+                      setShowSortMenu(false);
+                    }}
+                  >
+                    Plus ancien
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className={styles.actionWrapper}>
+              <button
+                className={styles.actionButton}
+                onClick={() => setShowLayoutMenu(!showLayoutMenu)}
+              >
+                <span>⊞</span>
+                <span>Présentation</span>
+              </button>
+              {showLayoutMenu && (
+                <div className={styles.dropdownMenu}>
+                  <button
+                    className={`${styles.dropdownItem} ${layout === "grid" ? styles.dropdownItemActive : ""}`}
+                    onClick={() => {
+                      setLayout("grid");
+                      setShowLayoutMenu(false);
+                    }}
+                  >
+                    Grille
+                  </button>
+                  <button
+                    className={`${styles.dropdownItem} ${layout === "list" ? styles.dropdownItemActive : ""}`}
+                    onClick={() => {
+                      setLayout("list");
+                      setShowLayoutMenu(false);
+                    }}
+                  >
+                    Liste
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
@@ -196,19 +261,35 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            {/* Desktop Grid */}
-            <div className={styles.grid}>
-              {filteredNotes.map((note) => (
-                <NoteCard
-                  key={note.id}
-                  id={note.id}
-                  title={note.title}
-                  excerpt={getExcerpt(note.content)}
-                  category={note.category}
-                  updatedAt={note.updated_at}
-                />
-              ))}
-            </div>
+            {/* Desktop Content - Grid or List */}
+            {layout === "grid" ? (
+              <div className={styles.grid}>
+                {filteredNotes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    id={note.id}
+                    title={note.title}
+                    excerpt={getExcerpt(note.content)}
+                    category={note.category}
+                    updatedAt={note.updated_at}
+                    onUpdate={fetchNotes}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className={styles.desktopList}>
+                {filteredNotes.map((note) => (
+                  <NoteRow
+                    key={note.id}
+                    id={note.id}
+                    title={note.title}
+                    excerpt={getExcerpt(note.content, 80)}
+                    category={note.category}
+                    updatedAt={note.updated_at}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Mobile List */}
             <div className={styles.mobileList}>

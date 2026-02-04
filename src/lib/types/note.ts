@@ -21,6 +21,13 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   waiting_followup: 'var(--category-waiting)'
 };
 
+export const CATEGORY_ICONS: Record<Category, string> = {
+  todo: '📝',
+  done: '✓',
+  recurring: '🔄',
+  waiting_followup: '⏳'
+};
+
 export interface Note {
   id: string;
   user_id: string;
