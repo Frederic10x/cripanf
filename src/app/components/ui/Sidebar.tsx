@@ -1,15 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import styles from './Sidebar.module.css';
-
+import { useState } from "react";
+import Image from "next/image";
+import styles from "./Sidebar.module.css";
+import AllNotesIcon from "../icons/AllNotesIcon";
+import TodosIcon from "../icons/TodosIcon";
+import DoneIcon from "../icons/DoneIcon";
+import RecurringIcon from "../icons/RecurringIcon";
+import WaitingFollowupIcon from "../icons/WaitingFollowupIcon";
 interface SidebarProps {
   onCategoryChange?: (category: string | null) => void;
 }
 
 export default function Sidebar({ onCategoryChange }: SidebarProps) {
-  const [activeItem, setActiveItem] = useState('all');
+  const [activeItem, setActiveItem] = useState("all");
 
   const handleItemClick = (id: string, category: string | null) => {
     setActiveItem(id);
@@ -19,11 +23,26 @@ export default function Sidebar({ onCategoryChange }: SidebarProps) {
   };
 
   const menuItems = [
-    { id: 'all', label: 'Toutes les notes', icon: '/svg/all-notes.svg', category: null },
-    { id: 'todo', label: 'À faire', icon: '/svg/todos.svg', category: 'todo' },
-    { id: 'done', label: 'Fait', icon: '/svg/done.svg', category: 'done' },
-    { id: 'recurring', label: 'Tâches cycliques', icon: '/svg/recurring.svg', category: 'recurring' },
-    { id: 'waiting', label: 'Attente de retour', icon: '/svg/waiting_followup.svg', category: 'waiting_followup' },
+    {
+      id: "all",
+      label: "Toutes les notes",
+      icon: AllNotesIcon,
+      category: null,
+    },
+    { id: "todo", label: "À faire", icon: TodosIcon, category: "todo" },
+    { id: "done", label: "Fait", icon: DoneIcon, category: "done" },
+    {
+      id: "recurring",
+      label: "Tâches cycliques",
+      icon: RecurringIcon,
+      category: "recurring",
+    },
+    {
+      id: "waiting",
+      label: "Attente de retour",
+      icon: WaitingFollowupIcon,
+      category: "waiting_followup",
+    },
   ];
 
   return (
@@ -36,31 +55,31 @@ export default function Sidebar({ onCategoryChange }: SidebarProps) {
           height={32}
           className={styles.logoIcon}
         />
-        <span className={styles.logoText}>Cripan'</span>
+        <span className={styles.logoText}>
+          Cripan<mark>f</mark>
+        </span>
       </div>
 
       <nav className={styles.section}>
         <h2 className={styles.sectionTitle}>Espace</h2>
         <ul className={styles.list}>
-          {menuItems.map((item) => (
-            <li key={item.id}>
-              <button
-                className={`${styles.item} ${
-                  activeItem === item.id ? styles.itemActive : ''
-                }`}
-                onClick={() => handleItemClick(item.id, item.category)}
-              >
-                <Image
-                  src={item.icon}
-                  alt={item.label}
-                  width={20}
-                  height={20}
-                  className={styles.itemIcon}
-                />
-                <span>{item.label}</span>
-              </button>
-            </li>
-          ))}
+          {menuItems.map((item) => {
+            const IconComponent = item.icon;
+            return (
+              <li key={item.id}>
+                <button
+                  className={`${styles.item} ${
+                    activeItem === item.id ? styles.itemActive : ""
+                  }`}
+                  onClick={() => handleItemClick(item.id, item.category)}
+                  data-category={item.category}
+                >
+                  <IconComponent className={styles.itemIcon} />
+                  <span>{item.label}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </aside>

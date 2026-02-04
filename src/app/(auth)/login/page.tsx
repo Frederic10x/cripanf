@@ -84,8 +84,8 @@ export default function LoginPage() {
             <Image
               src="/svg/thunder.svg"
               alt="Thunder"
-              width={48}
-              height={48}
+              width={40}
+              height={40}
               className={styles.icon}
             />
           </div>
@@ -139,7 +139,12 @@ export default function LoginPage() {
                       : "Afficher le mot de passe"
                   }
                 >
-                  {showPassword ? "👁️" : "👁️‍🗨️"}
+                  <Image
+                    src="/svg/password.svg"
+                    alt="Cripan'"
+                    width={20}
+                    height={20}
+                  />
                 </button>
               </div>
             </div>
