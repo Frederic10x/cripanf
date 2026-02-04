@@ -294,9 +294,9 @@ export default function NewNotePage() {
 
         {/* Mobile Header */}
         <header className={styles.mobileHeader}>
-          <div className={styles.mobileHeaderLogo}>
+          <Link href="/dashboard" className={styles.mobileHeaderLogo}>
             Cripan<mark>f</mark>
-          </div>
+          </Link>
           <button
             className={styles.saveButton}
             onClick={handleSave}

@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./login.module.css";
@@ -64,7 +65,7 @@ export default function LoginPage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <div className={styles.logo}>
+        <Link href="/dashboard" className={styles.logo}>
           <Image
             src="/svg/app.svg"
             alt="Cripan'"
@@ -75,7 +76,7 @@ export default function LoginPage() {
           <span className={styles.logoText}>
             Cripan<mark>f</mark>
           </span>
-        </div>
+        </Link>
       </header>
 
       <main className={styles.main}>

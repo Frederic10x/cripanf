@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import styles from "./Sidebar.module.css";
 import AllNotesIcon from "../icons/AllNotesIcon";
@@ -47,7 +48,7 @@ export default function Sidebar({ onCategoryChange }: SidebarProps) {
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.logo}>
+      <Link href="/dashboard" className={styles.logo}>
         <Image
           src="/svg/app.svg"
           alt="Cripan'"
@@ -58,7 +59,7 @@ export default function Sidebar({ onCategoryChange }: SidebarProps) {
         <span className={styles.logoText}>
           Cripan<mark>f</mark>
         </span>
-      </div>
+      </Link>
 
       <nav className={styles.section}>
         <h2 className={styles.sectionTitle}>Espace de travail</h2>

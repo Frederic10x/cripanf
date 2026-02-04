@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Note, Category, CATEGORIES, CATEGORY_LABELS } from '@/lib/types/note';
-import CategoryBadge from '@/app/components/ui/CategoryBadge';
-import MobileNav from '@/app/components/ui/MobileNav';
-import { createClient } from '@/lib/supabase/client';
-import styles from './note-detail.module.css';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { Note, Category, CATEGORIES, CATEGORY_LABELS } from "@/lib/types/note";
+import CategoryBadge from "@/app/components/ui/CategoryBadge";
+import MobileNav from "@/app/components/ui/MobileNav";
+import { createClient } from "@/lib/supabase/client";
+import styles from "./note-detail.module.css";
 
 export default function NoteDetailPage({
   params,
@@ -19,11 +19,11 @@ export default function NoteDetailPage({
   const [note, setNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState('');
-  const [editedTitle, setEditedTitle] = useState('');
+  const [editedContent, setEditedContent] = useState("");
+  const [editedTitle, setEditedTitle] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [noteId, setNoteId] = useState<string>('');
+  const [noteId, setNoteId] = useState<string>("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +36,10 @@ export default function NoteDetailPage({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
         setShowProfileMenu(false);
       }
     };
@@ -59,12 +62,12 @@ export default function NoteDetailPage({
         setEditedContent(data.content);
         setEditedTitle(data.title);
       } else {
-        console.error('Failed to fetch note');
-        router.push('/dashboard');
+        console.error("Failed to fetch note");
+        router.push("/dashboard");
       }
     } catch (error) {
-      console.error('Error fetching note:', error);
-      router.push('/dashboard');
+      console.error("Error fetching note:", error);
+      router.push("/dashboard");
     } finally {
       setLoading(false);
     }
@@ -72,15 +75,15 @@ export default function NoteDetailPage({
 
   const handleEditSave = async () => {
     if (!note || editedContent.trim().length < 3) {
-      alert('Le contenu doit contenir au moins 3 caractères');
+      alert("Le contenu doit contenir au moins 3 caractères");
       return;
     }
 
     try {
       const response = await fetch(`/api/notes/${noteId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           content: editedContent,
@@ -94,11 +97,11 @@ export default function NoteDetailPage({
         setIsEditing(false);
       } else {
         const error = await response.json();
-        alert(error.error || 'Erreur lors de la mise à jour');
+        alert(error.error || "Erreur lors de la mise à jour");
       }
     } catch (error) {
-      console.error('Error updating note:', error);
-      alert('Erreur lors de la mise à jour');
+      console.error("Error updating note:", error);
+      alert("Erreur lors de la mise à jour");
     }
   };
 
@@ -113,9 +116,9 @@ export default function NoteDetailPage({
 
     try {
       const response = await fetch(`/api/notes/${noteId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ category: newCategory }),
       });
@@ -127,13 +130,13 @@ export default function NoteDetailPage({
         // Revert on error
         setNote(previousNote);
         const error = await response.json();
-        alert(error.error || 'Erreur lors de la recatégorisation');
+        alert(error.error || "Erreur lors de la recatégorisation");
       }
     } catch (error) {
       // Revert on error
       setNote(previousNote);
-      console.error('Error updating category:', error);
-      alert('Erreur lors de la recatégorisation');
+      console.error("Error updating category:", error);
+      alert("Erreur lors de la recatégorisation");
     }
   };
 
@@ -142,18 +145,18 @@ export default function NoteDetailPage({
 
     try {
       const response = await fetch(`/api/notes/${noteId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.ok) {
-        router.push('/dashboard');
+        router.push("/dashboard");
       } else {
         const error = await response.json();
-        alert(error.error || 'Erreur lors de la suppression');
+        alert(error.error || "Erreur lors de la suppression");
       }
     } catch (error) {
-      console.error('Error deleting note:', error);
-      alert('Erreur lors de la suppression');
+      console.error("Error deleting note:", error);
+      alert("Erreur lors de la suppression");
     }
   };
 
@@ -169,10 +172,10 @@ export default function NoteDetailPage({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+    return date.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   };
 
@@ -185,11 +188,11 @@ export default function NoteDetailPage({
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffMinutes < 60) {
-      return `il y a ${diffMinutes} minute${diffMinutes > 1 ? 's' : ''}`;
+      return `il y a ${diffMinutes} minute${diffMinutes > 1 ? "s" : ""}`;
     } else if (diffHours < 24) {
-      return `il y a ${diffHours} heure${diffHours > 1 ? 's' : ''}`;
+      return `il y a ${diffHours} heure${diffHours > 1 ? "s" : ""}`;
     } else if (diffDays < 7) {
-      return `il y a ${diffDays} jour${diffDays > 1 ? 's' : ''}`;
+      return `il y a ${diffDays} jour${diffDays > 1 ? "s" : ""}`;
     } else {
       return `le ${formatDate(dateString)}`;
     }
@@ -245,144 +248,144 @@ export default function NoteDetailPage({
 
         {/* Mobile Header */}
         <header className={styles.mobileHeader}>
-          <div className={styles.mobileHeaderLogo}>
+          <Link href="/dashboard" className={styles.mobileHeaderLogo}>
             Cripan<mark>f</mark>
-          </div>
+          </Link>
         </header>
 
-      <div className={styles.content}>
-        <main className={styles.main}>
-          <CategoryBadge category={note.category} />
-
-          {isEditing ? (
-            <input
-              type="text"
-              className={styles.titleInput}
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              placeholder="Titre de la note"
-            />
-          ) : (
-            <h1 className={styles.title}>{note.title}</h1>
-          )}
-
-          <p className={styles.metadata}>
-            Édité {formatRelativeTime(note.updated_at)}
-          </p>
-
-          <div className={styles.actions}>
-            {isEditing ? (
-              <>
-                <button
-                  className={styles.saveButton}
-                  onClick={handleEditSave}
-                >
-                  💾 Sauvegarder
-                </button>
-                <button
-                  className={styles.cancelButton}
-                  onClick={() => {
-                    setIsEditing(false);
-                    setEditedContent(note.content);
-                    setEditedTitle(note.title);
-                  }}
-                >
-                  Annuler
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  className={styles.editButton}
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Image
-                    src="/svg/edit.svg"
-                    alt="Edit"
-                    width={16}
-                    height={16}
-                    style={{ display: 'inline', marginRight: '8px' }}
-                  />
-                  Éditer la note
-                </button>
-                <button
-                  className={styles.deleteButton}
-                  onClick={() => setShowDeleteModal(true)}
-                >
-                  <Image
-                    src="/svg/bin.svg"
-                    alt="Delete"
-                    width={20}
-                    height={20}
-                  />
-                </button>
-              </>
-            )}
-          </div>
-
-          <section className={styles.contentSection}>
-            <h2 className={styles.sectionTitle}>Contenu de la note</h2>
+        <div className={styles.content}>
+          <main className={styles.main}>
+            <CategoryBadge category={note.category} />
 
             {isEditing ? (
-              <textarea
-                className={styles.textarea}
-                value={editedContent}
-                onChange={(e) => setEditedContent(e.target.value)}
-                rows={15}
+              <input
+                type="text"
+                className={styles.titleInput}
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                placeholder="Titre de la note"
               />
             ) : (
-              <div className={styles.noteContent}>{note.content}</div>
+              <h1 className={styles.title}>{note.title}</h1>
             )}
-          </section>
-        </main>
 
-        <aside className={styles.sidebar}>
-          <div className={styles.card}>
-            <h3 className={styles.cardTitle}>Métadonnées</h3>
+            <p className={styles.metadata}>
+              Édité {formatRelativeTime(note.updated_at)}
+            </p>
 
-            <div className={styles.metadataItem}>
-              <span className={styles.metadataLabel}>Date de création :</span>
-              <span className={styles.metadataValue}>
-                {formatDate(note.created_at)}
-              </span>
-            </div>
-
-            <div className={styles.metadataItem}>
-              <span className={styles.metadataLabel}>
-                Dernière modification :
-              </span>
-              <span className={styles.metadataValue}>
-                {formatRelativeTime(note.updated_at)}
-              </span>
-            </div>
-
-            <div className={styles.recategorizeSection}>
-              <button
-                className={styles.recategorizeButton}
-                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-              >
-                Recatégoriser la note
-              </button>
-
-              {showCategoryDropdown && (
-                <div className={styles.dropdown}>
-                  {Object.values(CATEGORIES).map((cat) => (
-                    <button
-                      key={cat}
-                      className={`${styles.dropdownItem} ${
-                        note.category === cat ? styles.dropdownItemActive : ''
-                      }`}
-                      onClick={() => handleCategoryChange(cat as Category)}
-                    >
-                      {CATEGORY_LABELS[cat as Category]}
-                    </button>
-                  ))}
-                </div>
+            <div className={styles.actions}>
+              {isEditing ? (
+                <>
+                  <button
+                    className={styles.saveButton}
+                    onClick={handleEditSave}
+                  >
+                    💾 Sauvegarder
+                  </button>
+                  <button
+                    className={styles.cancelButton}
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditedContent(note.content);
+                      setEditedTitle(note.title);
+                    }}
+                  >
+                    Annuler
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className={styles.editButton}
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Image
+                      src="/svg/edit.svg"
+                      alt="Edit"
+                      width={16}
+                      height={16}
+                      style={{ display: "inline", marginRight: "8px" }}
+                    />
+                    Éditer la note
+                  </button>
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() => setShowDeleteModal(true)}
+                  >
+                    <Image
+                      src="/svg/bin.svg"
+                      alt="Delete"
+                      width={20}
+                      height={20}
+                    />
+                  </button>
+                </>
               )}
             </div>
-          </div>
-        </aside>
-      </div>
+
+            <section className={styles.contentSection}>
+              <h2 className={styles.sectionTitle}>Contenu de la note</h2>
+
+              {isEditing ? (
+                <textarea
+                  className={styles.textarea}
+                  value={editedContent}
+                  onChange={(e) => setEditedContent(e.target.value)}
+                  rows={15}
+                />
+              ) : (
+                <div className={styles.noteContent}>{note.content}</div>
+              )}
+            </section>
+          </main>
+
+          <aside className={styles.sidebar}>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>Métadonnées</h3>
+
+              <div className={styles.metadataItem}>
+                <span className={styles.metadataLabel}>Date de création :</span>
+                <span className={styles.metadataValue}>
+                  {formatDate(note.created_at)}
+                </span>
+              </div>
+
+              <div className={styles.metadataItem}>
+                <span className={styles.metadataLabel}>
+                  Dernière modification :
+                </span>
+                <span className={styles.metadataValue}>
+                  {formatRelativeTime(note.updated_at)}
+                </span>
+              </div>
+
+              <div className={styles.recategorizeSection}>
+                <button
+                  className={styles.recategorizeButton}
+                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                >
+                  Recatégoriser la note
+                </button>
+
+                {showCategoryDropdown && (
+                  <div className={styles.dropdown}>
+                    {Object.values(CATEGORIES).map((cat) => (
+                      <button
+                        key={cat}
+                        className={`${styles.dropdownItem} ${
+                          note.category === cat ? styles.dropdownItemActive : ""
+                        }`}
+                        onClick={() => handleCategoryChange(cat as Category)}
+                      >
+                        {CATEGORY_LABELS[cat as Category]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </aside>
+        </div>
 
         {showDeleteModal && (
           <div className={styles.modalOverlay}>
@@ -399,7 +402,10 @@ export default function NoteDetailPage({
                 >
                   Annuler
                 </button>
-                <button className={styles.modalDeleteButton} onClick={handleDelete}>
+                <button
+                  className={styles.modalDeleteButton}
+                  onClick={handleDelete}
+                >
                   Supprimer
                 </button>
               </div>
