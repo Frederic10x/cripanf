@@ -2,14 +2,15 @@
 
 import Sidebar from '../components/ui/Sidebar';
 import { DashboardProvider, useDashboard } from './DashboardContext';
+import styles from './layout.module.css';
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { setSelectedCategory } = useDashboard();
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div className={styles.layout}>
       <Sidebar onCategoryChange={setSelectedCategory} />
-      <main style={{ marginLeft: '200px', flex: 1, backgroundColor: 'var(--color-bg-secondary)' }}>
+      <main className={styles.main}>
         {children}
       </main>
     </div>
