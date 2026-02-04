@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import ProgressBar from '@/app/components/ui/ProgressBar';
 import styles from './new-note.module.css';
 
@@ -157,7 +158,13 @@ export default function NewNotePage() {
             Sauvegarder
           </button>
           <div className={styles.profile}>
-            <div className={styles.profileIcon}>👤</div>
+            <Image
+              src="/svg/profile.svg"
+              alt="Profile"
+              width={32}
+              height={32}
+              className={styles.profileIcon}
+            />
           </div>
         </div>
       </header>
@@ -189,7 +196,12 @@ export default function NewNotePage() {
         title="Enregistrement vocal"
         disabled={loading}
       >
-        🎤
+        <Image
+          src="/svg/mic.svg"
+          alt="Microphone"
+          width={24}
+          height={24}
+        />
       </button>
     </div>
   );

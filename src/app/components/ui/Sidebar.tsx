@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import styles from './Sidebar.module.css';
 
 interface SidebarProps {
@@ -18,17 +19,23 @@ export default function Sidebar({ onCategoryChange }: SidebarProps) {
   };
 
   const menuItems = [
-    { id: 'all', label: 'Toutes les notes', icon: '⊞', category: null },
-    { id: 'todo', label: 'À faire', icon: '☑', category: 'todo' },
-    { id: 'done', label: 'Fait', icon: '✓', category: 'done' },
-    { id: 'recurring', label: 'Tâches cycliques', icon: '↻', category: 'recurring' },
-    { id: 'waiting', label: 'Attente de retour', icon: '👥', category: 'waiting_followup' },
+    { id: 'all', label: 'Toutes les notes', icon: '/svg/all-notes.svg', category: null },
+    { id: 'todo', label: 'À faire', icon: '/svg/todos.svg', category: 'todo' },
+    { id: 'done', label: 'Fait', icon: '/svg/done.svg', category: 'done' },
+    { id: 'recurring', label: 'Tâches cycliques', icon: '/svg/recurring.svg', category: 'recurring' },
+    { id: 'waiting', label: 'Attente de retour', icon: '/svg/waiting_followup.svg', category: 'waiting_followup' },
   ];
 
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
-        <div className={styles.logoIcon}>C</div>
+        <Image
+          src="/svg/app.svg"
+          alt="Cripan'"
+          width={32}
+          height={32}
+          className={styles.logoIcon}
+        />
         <span className={styles.logoText}>Cripan'</span>
       </div>
 
@@ -43,7 +50,13 @@ export default function Sidebar({ onCategoryChange }: SidebarProps) {
                 }`}
                 onClick={() => handleItemClick(item.id, item.category)}
               >
-                <span className={styles.itemIcon}>{item.icon}</span>
+                <Image
+                  src={item.icon}
+                  alt={item.label}
+                  width={20}
+                  height={20}
+                  className={styles.itemIcon}
+                />
                 <span>{item.label}</span>
               </button>
             </li>

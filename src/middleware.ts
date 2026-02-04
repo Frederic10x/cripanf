@@ -35,18 +35,32 @@ export async function middleware(request: NextRequest) {
 
   const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
   const isNote = request.nextUrl.pathname.startsWith('/note')
-  const isAuth = request.nextUrl.pathname.startsWith('/auth')
+  const isLogin = request.nextUrl.pathname === '/login'
 
+  // USER NON CONNECTÉ
   if (!user && (isDashboard || isNote)) {
+    // Rediriger vers /login si accès aux routes protégées
     const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
+    url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  if (user && isAuth) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+  // USER CONNECTÉ
+  if (user) {
+    if (isLogin) {
+      // Rediriger vers /dashboard si déjà connecté
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+
+    // Si l'utilisateur est connecté et n'est pas sur une route autorisée
+    // Rediriger vers /dashboard
+    if (!isDashboard && !isNote) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse
@@ -54,6 +68,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

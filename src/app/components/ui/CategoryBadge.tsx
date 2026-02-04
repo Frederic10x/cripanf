@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Category, CATEGORY_LABELS } from '@/lib/types/note';
 import styles from './CategoryBadge.module.css';
 
@@ -8,10 +9,10 @@ interface CategoryBadgeProps {
 }
 
 const categoryIcons: Record<Category, string> = {
-  todo: '📋',
-  done: '✅',
-  recurring: '🔄',
-  waiting_followup: '⏳',
+  todo: '/svg/todos.svg',
+  done: '/svg/done.svg',
+  recurring: '/svg/recurring.svg',
+  waiting_followup: '/svg/waiting_followup.svg',
 };
 
 export default function CategoryBadge({ category }: CategoryBadgeProps) {
@@ -32,7 +33,13 @@ export default function CategoryBadge({ category }: CategoryBadgeProps) {
 
   return (
     <div className={`${styles.badge} ${getBadgeClass()}`}>
-      <span className={styles.icon}>{categoryIcons[category]}</span>
+      <Image
+        src={categoryIcons[category]}
+        alt={CATEGORY_LABELS[category]}
+        width={16}
+        height={16}
+        className={styles.icon}
+      />
       <span className={styles.label}>
         {CATEGORY_LABELS[category].toUpperCase()}
       </span>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Note, Category, CATEGORIES, CATEGORY_LABELS } from '@/lib/types/note';
 import CategoryBadge from '@/app/components/ui/CategoryBadge';
 import styles from './note-detail.module.css';
@@ -188,7 +189,13 @@ export default function NoteDetailPage({
           </Link>
         </nav>
         <div className={styles.profile}>
-          <div className={styles.profileIcon}>👤</div>
+          <Image
+            src="/svg/profile.svg"
+            alt="Profile"
+            width={32}
+            height={32}
+            className={styles.profileIcon}
+          />
         </div>
       </header>
 
@@ -238,13 +245,25 @@ export default function NoteDetailPage({
                   className={styles.editButton}
                   onClick={() => setIsEditing(true)}
                 >
-                  ✏️ Éditer la note
+                  <Image
+                    src="/svg/edit.svg"
+                    alt="Edit"
+                    width={16}
+                    height={16}
+                    style={{ display: 'inline', marginRight: '8px' }}
+                  />
+                  Éditer la note
                 </button>
                 <button
                   className={styles.deleteButton}
                   onClick={() => setShowDeleteModal(true)}
                 >
-                  🗑️
+                  <Image
+                    src="/svg/bin.svg"
+                    alt="Delete"
+                    width={20}
+                    height={20}
+                  />
                 </button>
               </>
             )}

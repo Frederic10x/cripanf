@@ -1,16 +1,17 @@
-'use client';
+"use client";
 
-import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import styles from './login.module.css';
+import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
+import styles from "./login.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const validateEmail = (email: string): boolean => {
@@ -20,21 +21,21 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     // Validation
     if (!email || !password) {
-      setError('Veuillez remplir tous les champs');
+      setError("Veuillez remplir tous les champs");
       return;
     }
 
     if (!validateEmail(email)) {
-      setError('Veuillez entrer une adresse email valide');
+      setError("Veuillez entrer une adresse email valide");
       return;
     }
 
     if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
+      setError("Le mot de passe doit contenir au moins 6 caractères");
       return;
     }
 
@@ -48,13 +49,13 @@ export default function LoginPage() {
       });
 
       if (signInError) {
-        setError('Email ou mot de passe incorrect');
+        setError("Email ou mot de passe incorrect");
         return;
       }
 
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (err) {
-      setError('Une erreur est survenue. Veuillez réessayer.');
+      setError("Une erreur est survenue. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
@@ -64,15 +65,29 @@ export default function LoginPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.logo}>
-          <div className={styles.logoIcon}>📝</div>
-          <span className={styles.logoText}>Cripani'</span>
+          <Image
+            src="/svg/app.svg"
+            alt="Cripan'"
+            width={32}
+            height={32}
+            className={styles.logoIcon}
+          />
+          <span className={styles.logoText}>
+            Cripan<mark>f</mark>
+          </span>
         </div>
       </header>
 
       <main className={styles.main}>
         <div className={styles.card}>
           <div className={styles.iconWrapper}>
-            <div className={styles.icon}>📝</div>
+            <Image
+              src="/svg/thunder.svg"
+              alt="Thunder"
+              width={48}
+              height={48}
+              className={styles.icon}
+            />
           </div>
 
           <h1 className={styles.title}>Bienvenue</h1>
@@ -91,7 +106,7 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   className={styles.input}
-                  placeholder="cripani@gmail.com"
+                  placeholder="cripanf@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
@@ -107,7 +122,7 @@ export default function LoginPage() {
                 <span className={styles.inputIcon}>🔒</span>
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   className={styles.input}
                   placeholder="mot de passe"
                   value={password}
@@ -118,21 +133,21 @@ export default function LoginPage() {
                   type="button"
                   className={styles.passwordToggle}
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  aria-label={
+                    showPassword
+                      ? "Masquer le mot de passe"
+                      : "Afficher le mot de passe"
+                  }
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                  {showPassword ? "👁️" : "👁️‍🗨️"}
                 </button>
               </div>
             </div>
 
             {error && <div className={styles.error}>{error}</div>}
 
-            <button
-              type="submit"
-              className={styles.button}
-              disabled={loading}
-            >
-              {loading ? 'Connexion...' : 'Se connecter'}
+            <button type="submit" className={styles.button} disabled={loading}>
+              {loading ? "Connexion..." : "Se connecter"}
             </button>
           </form>
         </div>
