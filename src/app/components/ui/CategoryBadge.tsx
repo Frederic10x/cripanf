@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { Category, CATEGORY_LABELS } from '@/lib/types/note';
 import styles from './CategoryBadge.module.css';
 
@@ -33,12 +32,19 @@ export default function CategoryBadge({ category }: CategoryBadgeProps) {
 
   return (
     <div className={`${styles.badge} ${getBadgeClass()}`}>
-      <Image
-        src={categoryIcons[category]}
-        alt={CATEGORY_LABELS[category]}
-        width={16}
-        height={16}
+      <div
         className={styles.icon}
+        style={{
+          maskImage: `url(${categoryIcons[category]})`,
+          WebkitMaskImage: `url(${categoryIcons[category]})`,
+          maskSize: 'contain',
+          WebkitMaskSize: 'contain',
+          maskRepeat: 'no-repeat',
+          WebkitMaskRepeat: 'no-repeat',
+          maskPosition: 'center',
+          WebkitMaskPosition: 'center',
+          backgroundColor: 'currentColor',
+        }}
       />
       <span className={styles.label}>
         {CATEGORY_LABELS[category].toUpperCase()}
