@@ -229,6 +229,20 @@
   transform: none;
 }
 
+.micButton.recording {
+  background: #e74c3c;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.5);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(231, 76, 60, 0.8);
+  }
+}
+
 /* Mobile Media Queries */
 @media (max-width: 768px) {
   .header {
@@ -237,5 +251,10 @@
 
   .mobileHeader {
     display: flex;
+  }
+
+  .micButton {
+    bottom: 90px;
+    right: 20px;
   }
 }
