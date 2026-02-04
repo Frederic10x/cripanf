@@ -1,0 +1,99 @@
+.card {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  position: relative;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.badge {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.badgeTodo {
+  background-color: rgba(255, 101, 66, 0.1);
+  color: var(--category-todo);
+}
+
+.badgeDone {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--category-done);
+}
+
+.badgeRecurring {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--category-recurring);
+}
+
+.badgeWaiting {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--category-waiting);
+}
+
+.menu {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.menu:hover {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text);
+}
+
+.title {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: var(--spacing-sm);
+  line-height: 1.4;
+}
+
+.excerpt {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: var(--spacing-xs);
+}
+
+.date {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-md);
+}
