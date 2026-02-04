@@ -5,11 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import styles from './MobileNav.module.css';
 
-interface MobileNavProps {
-  onSearchClick?: () => void;
-}
-
-export default function MobileNav({ onSearchClick }: MobileNavProps) {
+export default function MobileNav() {
   const pathname = usePathname();
   const isDashboard = pathname === '/dashboard';
 
@@ -31,23 +27,6 @@ export default function MobileNav({ onSearchClick }: MobileNavProps) {
         </svg>
         <span className={styles.label}>Dashboard</span>
       </Link>
-
-      <button
-        className={styles.item}
-        onClick={onSearchClick}
-      >
-        <svg
-          className={styles.icon}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
-        <span className={styles.label}>Rechercher</span>
-      </button>
 
       <Link href="/note/new" className={styles.fab}>
         <svg
@@ -71,11 +50,6 @@ export default function MobileNav({ onSearchClick }: MobileNavProps) {
           className={styles.icon}
         />
         <span className={styles.label}>Profile</span>
-      </button>
-
-      <button className={styles.item}>
-        <span className={styles.icon}>⋮</span>
-        <span className={styles.label}>Menu</span>
       </button>
     </nav>
   );
