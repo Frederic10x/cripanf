@@ -51,13 +51,15 @@ export default function LoginPage() {
 
       if (signInError) {
         setError("Email ou mot de passe incorrect");
+        setLoading(false);
         return;
       }
 
-      router.push("/dashboard");
+      // Forcer un rechargement complet pour que le middleware détecte la session
+      // router.push() ne suffit pas en production car il ne passe pas par le middleware
+      window.location.href = "/dashboard";
     } catch (err) {
       setError("Une erreur est survenue. Veuillez réessayer.");
-    } finally {
       setLoading(false);
     }
   };
