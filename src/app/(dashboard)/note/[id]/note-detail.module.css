@@ -129,7 +129,7 @@
 }
 
 .title {
-  font-size: var(--font-2xl);
+  font-size: var(--font-xl);
   font-weight: 700;
   color: var(--color-text);
   margin-top: var(--spacing-sm);
@@ -139,7 +139,7 @@
 
 .titleInput {
   width: 100%;
-  font-size: var(--font-2xl);
+  font-size: var(--font-xl);
   font-weight: 700;
   color: var(--color-text);
   margin-top: var(--spacing-sm);
