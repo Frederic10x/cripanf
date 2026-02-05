@@ -43,7 +43,10 @@ export default function NoteDetailPage({
   const [noteId, setNoteId] = useState<string>("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isRecategorizing, setIsRecategorizing] = useState(false);
+  const [showRecategorizeMenu, setShowRecategorizeMenu] = useState(false);
+  const [showManualCategoryMenu, setShowManualCategoryMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const recategorizeMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -60,16 +63,23 @@ export default function NoteDetailPage({
       ) {
         setShowProfileMenu(false);
       }
+      if (
+        recategorizeMenuRef.current &&
+        !recategorizeMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowRecategorizeMenu(false);
+        setShowManualCategoryMenu(false);
+      }
     };
 
-    if (showProfileMenu) {
+    if (showProfileMenu || showRecategorizeMenu || showManualCategoryMenu) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showProfileMenu]);
+  }, [showProfileMenu, showRecategorizeMenu, showManualCategoryMenu]);
 
   const fetchNote = async (id: string) => {
     try {
@@ -128,6 +138,8 @@ export default function NoteDetailPage({
 
     setIsRecategorizing(true);
     setShowCategoryDropdown(false);
+    setShowRecategorizeMenu(false);
+    setShowManualCategoryMenu(false);
 
     try {
       // Call categorize API with note content
@@ -170,6 +182,37 @@ export default function NoteDetailPage({
       alert("Erreur lors de la recatégorisation");
     } finally {
       setIsRecategorizing(false);
+    }
+  };
+
+  const handleManualCategoryChange = async (
+    category: "todo" | "done" | "recurring" | "waiting_followup"
+  ) => {
+    if (!note) return;
+
+    setShowRecategorizeMenu(false);
+    setShowManualCategoryMenu(false);
+
+    try {
+      const updateResponse = await fetch(`/api/notes/${noteId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          category,
+        }),
+      });
+
+      if (updateResponse.ok) {
+        const updatedNote = await updateResponse.json();
+        setNote(updatedNote);
+      } else {
+        throw new Error("Failed to update note");
+      }
+    } catch (error) {
+      console.error("Error updating category:", error);
+      alert("Erreur lors de la mise à jour de la catégorie");
     }
   };
 
@@ -427,18 +470,83 @@ export default function NoteDetailPage({
                     Catégorie actuelle :
                     <span>{CATEGORY_LABELS[note.category]}</span>
                   </div>
-                  <button
-                    className={styles.recategorizeButtonNew}
-                    onClick={handleRecategorize}
-                    disabled={isRecategorizing}
-                  >
-                    <RecurringIcon className={styles.recategorizeIcon} />
-                    <span>
-                      {isRecategorizing
-                        ? "RECATÉGORISATION..."
-                        : "RECATÉGORISER"}
-                    </span>
-                  </button>
+                  <div className={styles.recategorizeWrapper} ref={recategorizeMenuRef}>
+                    <button
+                      className={styles.recategorizeButtonNew}
+                      onClick={() => setShowRecategorizeMenu(!showRecategorizeMenu)}
+                      disabled={isRecategorizing}
+                    >
+                      <RecurringIcon className={styles.recategorizeIcon} />
+                      <span>
+                        {isRecategorizing
+                          ? "RECATÉGORISATION..."
+                          : "RECATÉGORISER"}
+                      </span>
+                    </button>
+                    {showRecategorizeMenu && (
+                      <div className={styles.recategorizeMenu}>
+                        <button
+                          className={styles.recategorizeMenuItem}
+                          onClick={handleRecategorize}
+                        >
+                          <Image
+                            src="/svg/ai.svg"
+                            alt="AI"
+                            width={16}
+                            height={16}
+                          />
+                          <span>Recatégoriser avec l&apos;IA</span>
+                        </button>
+                        <button
+                          className={styles.recategorizeMenuItem}
+                          onClick={() => {
+                            setShowRecategorizeMenu(false);
+                            setShowManualCategoryMenu(true);
+                          }}
+                        >
+                          <Image
+                            src="/svg/edit.svg"
+                            alt="Manual"
+                            width={16}
+                            height={16}
+                          />
+                          <span>Choisir manuellement</span>
+                        </button>
+                      </div>
+                    )}
+                    {showManualCategoryMenu && (
+                      <div className={styles.manualCategoryMenu}>
+                        <button
+                          className={`${styles.categoryMenuItem} ${styles.categoryMenuItemTodo}`}
+                          onClick={() => handleManualCategoryChange("todo")}
+                        >
+                          <TodosIcon className={styles.categoryMenuIcon} />
+                          <span>À faire</span>
+                        </button>
+                        <button
+                          className={`${styles.categoryMenuItem} ${styles.categoryMenuItemDone}`}
+                          onClick={() => handleManualCategoryChange("done")}
+                        >
+                          <DoneIcon className={styles.categoryMenuIcon} />
+                          <span>Fait</span>
+                        </button>
+                        <button
+                          className={`${styles.categoryMenuItem} ${styles.categoryMenuItemRecurring}`}
+                          onClick={() => handleManualCategoryChange("recurring")}
+                        >
+                          <RecurringIcon className={styles.categoryMenuIcon} />
+                          <span>Tâches cycliques</span>
+                        </button>
+                        <button
+                          className={`${styles.categoryMenuItem} ${styles.categoryMenuItemWaiting}`}
+                          onClick={() => handleManualCategoryChange("waiting_followup")}
+                        >
+                          <WaitingFollowupIcon className={styles.categoryMenuIcon} />
+                          <span>Attente de retour</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </>
             )}
