@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SearchBar from "../../components/ui/SearchBar";
@@ -100,9 +100,9 @@ export default function DashboardPage() {
     setFilteredNotes(filtered);
   };
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-  };
+  }, []);
 
   const getExcerpt = (content: string, maxLength: number = 120) => {
     if (content.length <= maxLength) return content;

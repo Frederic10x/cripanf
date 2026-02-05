@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import styles from './SearchBar.module.css';
+import { useState, useEffect } from "react";
+import styles from "./SearchBar.module.css";
 
 interface SearchBarProps {
   placeholder?: string;
@@ -10,11 +10,11 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({
-  placeholder = 'Rechercher une note',
+  placeholder = "Rechercher une note",
   onSearch,
   debounceMs = 300,
 }: SearchBarProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
