@@ -160,7 +160,7 @@ export default function LoginPage() {
       </main>
 
       <footer className={styles.footer}>
-        © 2026 App de notes. Design et app par Frédéric Ferreira
+        © 2026 App de notes. Design et app par Frédéric Ferreira.
       </footer>
     </div>
   );

@@ -33,34 +33,46 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
-  const isNote = request.nextUrl.pathname.startsWith('/note')
-  const isLogin = request.nextUrl.pathname === '/login'
+  const pathname = request.nextUrl.pathname
+
+  // Définir les routes autorisées
+  const isLogin = pathname === '/login'
+  const isDashboard = pathname.startsWith('/dashboard')
+  const isNote = pathname.startsWith('/note')
+
+  // Routes autorisées pour les utilisateurs connectés
+  const isAuthorizedForAuthenticatedUser = isDashboard || isNote
 
   // USER NON CONNECTÉ
-  if (!user && (isDashboard || isNote)) {
-    // Rediriger vers /login si accès aux routes protégées
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  if (!user) {
+    // Si pas sur /login, rediriger vers /login
+    if (!isLogin) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+    // Autoriser l'accès à /login
+    return supabaseResponse
   }
 
   // USER CONNECTÉ
   if (user) {
+    // Si sur /login, rediriger vers /dashboard
     if (isLogin) {
-      // Rediriger vers /dashboard si déjà connecté
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
 
-    // Si l'utilisateur est connecté et n'est pas sur une route autorisée
-    // Rediriger vers /dashboard
-    if (!isDashboard && !isNote) {
+    // Si sur une route non autorisée (comme / ou autre), rediriger vers /dashboard
+    if (!isAuthorizedForAuthenticatedUser) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
+
+    // Autoriser l'accès aux routes autorisées
+    return supabaseResponse
   }
 
   return supabaseResponse
