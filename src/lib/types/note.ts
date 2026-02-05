@@ -37,4 +37,5 @@ export interface Note {
   created_at: string;
   updated_at: string;
   is_voice_note: boolean;
+  insights: string[] | null;
 }

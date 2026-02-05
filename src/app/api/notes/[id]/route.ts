@@ -87,7 +87,7 @@ export async function PATCH(
 
     // Parser le body
     const body = await request.json();
-    const { category, title, content } = body;
+    const { category, title, content, insights } = body;
 
     // Construire l'objet de mise à jour
     const updates: Partial<Note> = {};
@@ -134,6 +134,16 @@ export async function PATCH(
         );
       }
       updates.content = content;
+    }
+
+    if (insights !== undefined) {
+      if (insights !== null && !Array.isArray(insights)) {
+        return NextResponse.json(
+          { error: "Les insights doivent être un tableau ou null" },
+          { status: 400 },
+        );
+      }
+      updates.insights = insights;
     }
 
     // Vérifier qu'il y a au moins une mise à jour

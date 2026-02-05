@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { category, title } = await categorizeResponse.json();
+    const { category, title, insights } = await categorizeResponse.json();
 
     // Insérer la note
     const { data: note, error: insertError } = await supabase
@@ -134,6 +134,7 @@ export async function POST(request: NextRequest) {
         content,
         category,
         is_voice_note,
+        insights: insights || null,
       })
       .select()
       .single();

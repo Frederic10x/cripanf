@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         category: result.category as Category,
         title: result.title,
+        insights: result.insights || [],
       });
     } catch (groqError) {
       // Fallback en cas d'erreur Groq
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         category: "todo" as Category,
         title: content.slice(0, 60).trim(),
+        insights: [],
       });
     }
   } catch (error) {

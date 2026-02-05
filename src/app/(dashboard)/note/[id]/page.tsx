@@ -4,11 +4,28 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Note, Category, CATEGORIES, CATEGORY_LABELS } from "@/lib/types/note";
-import CategoryBadge from "@/app/components/ui/CategoryBadge";
+import { Note, CATEGORY_LABELS, CATEGORY_ICONS } from "@/lib/types/note";
 import MobileNav from "@/app/components/ui/MobileNav";
 import { createClient } from "@/lib/supabase/client";
+import EditIcon from "@/app/components/icons/EditIcon";
+import TodosIcon from "@/app/components/icons/TodosIcon";
+import DoneIcon from "@/app/components/icons/DoneIcon";
+import RecurringIcon from "@/app/components/icons/RecurringIcon";
+import WaitingFollowupIcon from "@/app/components/icons/WaitingFollowupIcon";
 import styles from "./note-detail.module.css";
+
+const icons = {
+  todo: { label: "À faire", icon: TodosIcon },
+  done: { label: "Fait", icon: DoneIcon },
+  recurring: {
+    label: "Tâches cycliques",
+    icon: RecurringIcon,
+  },
+  waiting_followup: {
+    label: "Attente de retour",
+    icon: WaitingFollowupIcon,
+  },
+};
 
 export default function NoteDetailPage({
   params,
@@ -25,6 +42,7 @@ export default function NoteDetailPage({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [noteId, setNoteId] = useState<string>("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isRecategorizing, setIsRecategorizing] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -105,38 +123,53 @@ export default function NoteDetailPage({
     }
   };
 
-  const handleCategoryChange = async (newCategory: Category) => {
+  const handleRecategorize = async () => {
     if (!note) return;
 
+    setIsRecategorizing(true);
     setShowCategoryDropdown(false);
 
-    // Optimistic update
-    const previousNote = note;
-    setNote({ ...note, category: newCategory });
-
     try {
-      const response = await fetch(`/api/notes/${noteId}`, {
+      // Call categorize API with note content
+      const categorizeResponse = await fetch("/api/categorize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: note.content }),
+      });
+
+      if (!categorizeResponse.ok) {
+        throw new Error("Failed to categorize");
+      }
+
+      const { category, title, insights } = await categorizeResponse.json();
+
+      // Update note with new category and insights
+      const updateResponse = await fetch(`/api/notes/${noteId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ category: newCategory }),
+        body: JSON.stringify({
+          category,
+          title,
+          insights,
+        }),
       });
 
-      if (response.ok) {
-        const updatedNote = await response.json();
+      if (updateResponse.ok) {
+        const updatedNote = await updateResponse.json();
         setNote(updatedNote);
+        setEditedTitle(updatedNote.title);
       } else {
-        // Revert on error
-        setNote(previousNote);
-        const error = await response.json();
-        alert(error.error || "Erreur lors de la recatégorisation");
+        throw new Error("Failed to update note");
       }
     } catch (error) {
-      // Revert on error
-      setNote(previousNote);
-      console.error("Error updating category:", error);
+      console.error("Error recategorizing:", error);
       alert("Erreur lors de la recatégorisation");
+    } finally {
+      setIsRecategorizing(false);
     }
   };
 
@@ -174,7 +207,7 @@ export default function NoteDetailPage({
     const date = new Date(dateString);
     return date.toLocaleDateString("fr-FR", {
       day: "numeric",
-      month: "long",
+      month: "short",
       year: "numeric",
     });
   };
@@ -187,15 +220,38 @@ export default function NoteDetailPage({
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMinutes < 60) {
-      return `il y a ${diffMinutes} minute${diffMinutes > 1 ? "s" : ""}`;
+    if (diffMinutes < 1) {
+      return "à l'instant";
+    } else if (diffMinutes < 60) {
+      return `${diffMinutes} min`;
     } else if (diffHours < 24) {
-      return `il y a ${diffHours} heure${diffHours > 1 ? "s" : ""}`;
+      return `${diffHours} h`;
     } else if (diffDays < 7) {
-      return `il y a ${diffDays} jour${diffDays > 1 ? "s" : ""}`;
+      return `${diffDays} j`;
     } else {
-      return `le ${formatDate(dateString)}`;
+      return formatDate(dateString);
     }
+  };
+
+  const renderInsightsText = () => {
+    if (!note?.insights || note.insights.length === 0) return null;
+
+    const insightsText = note.insights.join(", ");
+    const parts = insightsText.split(/(,\s*)/);
+
+    return (
+      <span>
+        En se basant sur le contenu de votre note, il semble que les éléments
+        importants soient :{" "}
+        {parts.map((part, index) => {
+          if (part.match(/,\s*/)) {
+            return part;
+          }
+          return <strong key={index}>{part}</strong>;
+        })}
+        .
+      </span>
+    );
   };
 
   if (loading) {
@@ -209,6 +265,8 @@ export default function NoteDetailPage({
   if (!note) {
     return null;
   }
+
+  const Icon = icons[note.category].icon;
 
   return (
     <>
@@ -255,32 +313,29 @@ export default function NoteDetailPage({
 
         <div className={styles.content}>
           <main className={styles.main}>
-            <CategoryBadge category={note.category} />
-
             {isEditing ? (
-              <input
-                type="text"
-                className={styles.titleInput}
-                value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
-                placeholder="Titre de la note"
-              />
-            ) : (
-              <h1 className={styles.title}>{note.title}</h1>
-            )}
-
-            <p className={styles.metadata}>
-              Édité {formatRelativeTime(note.updated_at)}
-            </p>
-
-            <div className={styles.actions}>
-              {isEditing ? (
-                <>
+              // Edit mode
+              <>
+                <input
+                  type="text"
+                  className={styles.titleInput}
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  placeholder="Titre de la note"
+                />
+                <textarea
+                  className={styles.textarea}
+                  value={editedContent}
+                  onChange={(e) => setEditedContent(e.target.value)}
+                  rows={15}
+                  placeholder="Contenu de la note"
+                />
+                <div className={styles.editActions}>
                   <button
                     className={styles.saveButton}
                     onClick={handleEditSave}
                   >
-                    💾 Sauvegarder
+                    Sauvegarder
                   </button>
                   <button
                     className={styles.cancelButton}
@@ -292,99 +347,102 @@ export default function NoteDetailPage({
                   >
                     Annuler
                   </button>
-                </>
-              ) : (
-                <>
+                </div>
+              </>
+            ) : (
+              // View mode
+              <>
+                {/* Header section with category badge and actions */}
+                <div className={styles.noteHeaderTop}>
                   <button
-                    className={styles.editButton}
+                    className={styles.editButtonNew}
                     onClick={() => setIsEditing(true)}
                   >
-                    <Image
-                      src="/svg/edit.svg"
-                      alt="Edit"
-                      width={16}
-                      height={16}
-                      style={{ display: "inline", marginRight: "8px" }}
-                    />
-                    Éditer la note
+                    <EditIcon className={styles.editIcon} />
+                    <span>ÉDITER</span>
                   </button>
                   <button
-                    className={styles.deleteButton}
+                    className={styles.deleteButtonNew}
                     onClick={() => setShowDeleteModal(true)}
                   >
                     <Image
                       src="/svg/bin.svg"
-                      alt="Delete"
-                      width={20}
-                      height={20}
+                      alt="Supprimer"
+                      width={14}
+                      height={14}
                     />
+                    <span>SUPPRIMER</span>
                   </button>
-                </>
-              )}
-            </div>
+                </div>
+                <div className={styles.noteHeaderBottom}>
+                  <div className={styles.categoryBadge}>
+                    <Icon className={styles.categoryIcon} />
+                    <span>{icons[note.category].label.toUpperCase()}</span>
+                  </div>
+                  <div className={styles.noteMetadata}>
+                    <Image
+                      src="/svg/calendar.svg"
+                      alt="Calendar"
+                      width={14}
+                      height={14}
+                    />
+                    <span>Créé le {formatDate(note.created_at)}</span>
+                    <span className={styles.separator}>•</span>
+                    <span>
+                      Modifié il y a {formatRelativeTime(note.updated_at)}
+                    </span>
+                  </div>
+                </div>
 
-            <section className={styles.contentSection}>
-              <h2 className={styles.sectionTitle}>Contenu de la note</h2>
+                {/* Title */}
+                <h1 className={styles.noteTitle}>{note.title}</h1>
 
-              {isEditing ? (
-                <textarea
-                  className={styles.textarea}
-                  value={editedContent}
-                  onChange={(e) => setEditedContent(e.target.value)}
-                  rows={15}
-                />
-              ) : (
-                <div className={styles.noteContent}>{note.content}</div>
-              )}
-            </section>
-          </main>
+                {/* Content */}
+                <div className={styles.noteContentText}>{note.content}</div>
 
-          <aside className={styles.sidebar}>
-            <div className={styles.card}>
-              <h3 className={styles.cardTitle}>Métadonnées</h3>
-
-              <div className={styles.metadataItem}>
-                <span className={styles.metadataLabel}>Date de création :</span>
-                <span className={styles.metadataValue}>
-                  {formatDate(note.created_at)}
-                </span>
-              </div>
-
-              <div className={styles.metadataItem}>
-                <span className={styles.metadataLabel}>
-                  Dernière modification :
-                </span>
-                <span className={styles.metadataValue}>
-                  {formatRelativeTime(note.updated_at)}
-                </span>
-              </div>
-
-              <div className={styles.recategorizeSection}>
-                <button
-                  className={styles.recategorizeButton}
-                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                >
-                  Recatégoriser la note
-                </button>
-
-                {showCategoryDropdown && (
-                  <div className={styles.dropdown}>
-                    {Object.values(CATEGORIES).map((cat) => (
-                      <button
-                        key={cat}
-                        className={`${styles.dropdownItem} ${
-                          note.category === cat ? styles.dropdownItemActive : ""
-                        }`}
-                        onClick={() => handleCategoryChange(cat as Category)}
-                      >
-                        {CATEGORY_LABELS[cat as Category]}
-                      </button>
-                    ))}
+                {/* AI Insights */}
+                {note.insights && note.insights.length > 0 && (
+                  <div className={styles.insightsBlock}>
+                    <div className={styles.insightsHeader}>
+                      <Image
+                        src="/svg/ai.svg"
+                        alt="AI"
+                        width={20}
+                        height={20}
+                      />
+                      <span className={styles.insightsLabel}>
+                        INSIGHT DE L&apos;IA
+                      </span>
+                    </div>
+                    <p className={styles.insightsText}>
+                      {renderInsightsText()}
+                    </p>
                   </div>
                 )}
-              </div>
-            </div>
-          </aside>
+
+                {/* Current Category Section */}
+                <div className={styles.categorySection}>
+                  <div className={styles.currentCategory}>
+                    <Icon className={styles.currentIcon} />
+                    Catégorie actuelle :
+                    <span>{CATEGORY_LABELS[note.category]}</span>
+                  </div>
+                  <button
+                    className={styles.recategorizeButtonNew}
+                    onClick={handleRecategorize}
+                    disabled={isRecategorizing}
+                  >
+                    <RecurringIcon className={styles.recategorizeIcon} />
+                    <span>
+                      {isRecategorizing
+                        ? "RECATÉGORISATION..."
+                        : "RECATÉGORISER"}
+                    </span>
+                  </button>
+                </div>
+              </>
+            )}
+          </main>
         </div>
 
         {showDeleteModal && (
