@@ -140,6 +140,21 @@ export default function DashboardPage() {
     { id: "waiting", label: "Attente", value: "waiting_followup" },
   ];
 
+  const getCategoryColor = (category: Category | null): string => {
+    switch (category) {
+      case "todo":
+        return "var(--category-todo)";
+      case "done":
+        return "var(--category-done)";
+      case "recurring":
+        return "var(--category-recurring)";
+      case "waiting_followup":
+        return "var(--category-waiting)";
+      default:
+        return "var(--color-primary)";
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.container}>
@@ -297,6 +312,11 @@ export default function DashboardPage() {
               className={`${styles.categoryPill} ${
                 mobileCategory === cat.value ? styles.categoryPillActive : ""
               }`}
+              style={
+                mobileCategory === cat.value
+                  ? { backgroundColor: getCategoryColor(cat.value) }
+                  : {}
+              }
               onClick={() => handleMobileCategoryChange(cat.value)}
             >
               {cat.label}
