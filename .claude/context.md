@@ -2,9 +2,9 @@
 
 ## Objectif
 
-App de prise de notes avec catégorisation automatique IA (Groq).
+Application de gestion de notes avec catégorisation automatique par IA (Groq). Support des notes vocales et organisation par catégories (todo, done, recurring, waiting_followup).
 
-**Stack :** Next.js 16 + TypeScript + Supabase + Groq + CSS pur (NO Tailwind)
+**Stack :** Next.js 16.1.6 + React 19.2.3 + TypeScript 5 + Supabase SSR + Groq SDK + date-fns + CSS pur (NO Tailwind)
 
 ---
 
@@ -20,82 +20,91 @@ App de prise de notes avec catégorisation automatique IA (Groq).
 
 ---
 
-## Design System (extrait des maquettes)
+## Design System
 
-### Couleurs
+### Couleurs principales
 
 ```css
-/* Primary */
---color-primary: #ff6542; /* Orange principal (boutons, accents) */
---color-primary-light: #fff4f0; /* Orange très clair (backgrounds) */
-
-/* Backgrounds */
---color-bg: #ffffff;
---color-bg-secondary: #f5f5f5;
-
-/* Text */
---color-text: #1a1a1a;
---color-text-secondary: #6b6b6b;
-
-/* Borders */
---color-border: #e8e8e8;
+--color-primary: #ff6542;          /* Orange - boutons, accents */
+--color-primary-light: #fff4f0;    /* Orange clair - backgrounds */
 
 /* Categories */
---category-todo: #ff6542; /* À faire - Orange */
---category-done: #22c55e; /* Fait - Vert */
---category-recurring: #3b82f6; /* Cycliques - Bleu */
---category-waiting: #8b5cf6; /* Attente - Violet */
+--category-todo: #ff6542;          /* À faire - Orange */
+--category-done: #22c55e;          /* Fait - Vert */
+--category-recurring: #3b82f6;     /* Cycliques - Bleu */
+--category-waiting: #8b5cf6;       /* Attente - Violet */
 ```
 
-### Typography
-
-- **Font :** Inter (ou -apple-system fallback)
-- **Sizes :** 12px, 14px, 16px, 18px, 24px, 32px
-- **Weights :** 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
-- **Line-height :** 1.5 (body), 1.2 (headings)
-
-### Spacing
-
-- **Base unit :** 8px
-- **Scale :** 8px, 12px, 16px, 24px, 32px, 48px
-
-### Borders & Shadows
-
-- **Radius :** 8px (cards), 6px (inputs), 20px (buttons)
-- **Shadow cards :** `0 2px 8px rgba(0,0,0,0.08)`
-- **Shadow buttons :** `0 2px 4px rgba(255,101,66,0.2)`
+**Voir `src/styles/variables.css` pour le design system complet** (typography, spacing, shadows, etc.)
 
 ---
 
 ## Architecture
 
-### Structure
+### Structure clés
 
 ```
 src/
 ├── app/
-│   ├── (auth)/login/
-│   ├── (dashboard)/
-│   │   ├── layout.tsx
-│   │   ├── dashboard/
-│   │   └── note/
-│   │       ├── new/
-│   │       └── [id]/
+│   ├── (auth)/login/                    # Routes publiques
+│   ├── (dashboard)/                     # Routes protégées
+│   │   ├── DashboardContext.tsx         # State global (selectedCategory)
+│   │   ├── dashboard/ + note/[id]/ + note/new/
 │   ├── api/
-│   │   ├── notes/
-│   │   └── categorize/
+│   │   ├── notes/route.ts               # GET (all), POST
+│   │   ├── notes/[id]/route.ts          # GET, PUT, DELETE
+│   │   └── categorize/route.ts          # POST - IA catégorisation
 │   ├── components/
-│   │   ├── ui/
-│   │   └── forms/
-│   └── styles/
-│       ├── globals.css
-│       └── variables.css
+│   │   ├── ui/                          # NoteCard, Sidebar, SearchBar...
+│   │   └── icons/                       # SVG en composants React
 ├── lib/
-│   ├── supabase/
-│   ├── groq/
+│   ├── supabase/client.ts               # Browser client
+│   ├── groq/client.ts                   # Groq + categorizeNote()
 │   └── types/
-└── middleware.ts
+│       ├── note.ts                      # Types + constantes
+│       └── database.ts                  # Types Supabase générés
+├── styles/
+│   ├── globals.css
+│   └── variables.css                    # Design tokens
+└── middleware.ts                        # Protection routes + auth
 ```
+
+### Patterns & Conventions
+
+**Route Groups :**
+- `(auth)` : publiques | `(dashboard)` : protégées
+
+**State Management :**
+- `DashboardContext` + custom hook `useDashboard()`
+
+**Composants :**
+- Server Components par défaut, `'use client'` pour interactivité uniquement
+
+**Types :**
+- Constantes centralisées : `CATEGORIES`, `CATEGORY_LABELS`, `CATEGORY_COLORS`, `CATEGORY_ICONS`
+- Type `Category` dérivé : `typeof CATEGORIES[keyof typeof CATEGORIES]`
+
+**Imports :**
+- Alias `@/` → `src/`
+
+---
+
+## Fonctionnalités
+
+### Gestion de notes
+- CRUD complet avec vérification ownership (user_id)
+- Support notes vocales (flag `is_voice_note`)
+- Recherche et filtrage par catégorie
+
+### Catégorisation automatique (IA)
+- API `/api/categorize` utilise Groq (llama-3.1-8b-instant)
+- Input : contenu → Output : `{ category, title }`
+- Fallback graceful si erreur Groq : `{ category: 'todo', title: content.slice(0,60) }`
+
+### Authentification
+- Middleware Next.js + Supabase Auth
+- Routes protégées : `/dashboard/*`, `/note/*`
+- Redirections auto : non connecté → `/login`, connecté → `/dashboard`
 
 ---
 
@@ -114,15 +123,6 @@ updated_at TIMESTAMP
 is_voice_note BOOLEAN
 ```
 
-### Catégories
-
-```typescript
-'todo' → 'À faire'
-'done' → 'Fait'
-'recurring' → 'Tâches cycliques'
-'waiting_followup' → 'Attente de retour avec relance'
-```
-
 **RLS activé** : Users voient uniquement leurs notes.
 
 ---
@@ -130,17 +130,29 @@ is_voice_note BOOLEAN
 ## APIs
 
 ### Supabase Auth
-
 - Package : `@supabase/ssr`
-- Middleware protège : `/dashboard/*`, `/note/*`
-- Redirections auto selon session
+- Middleware protège `/dashboard/*`, `/note/*`
+- Matcher exclut : `/api`, `/_next`, statiques
 
-### Groq LLM
+### API Routes Notes
 
-- Modèle : `llama-3.1-8b-instant`
-- Endpoint : `POST /api/categorize`
-- Input : `{ content: string }`
-- Output : `{ category, title }`
+| Route | Méthode | Description |
+|-------|---------|-------------|
+| `/api/notes` | GET | Liste notes user |
+| `/api/notes` | POST | Créer note |
+| `/api/notes/[id]` | GET | Détail note |
+| `/api/notes/[id]` | PUT | Modifier note |
+| `/api/notes/[id]` | DELETE | Supprimer note |
+
+**Toutes les routes vérifient l'authentification et l'ownership.**
+
+### Groq LLM (Catégorisation)
+
+- **Modèle :** `llama-3.1-8b-instant`
+- **Route :** `POST /api/categorize`
+- **Body :** `{ content: string }`
+- **Response :** `{ category: Category, title: string }`
+- **Config :** `temperature: 0.3, max_tokens: 150`
 
 ---
 
@@ -158,18 +170,43 @@ GROQ_API_KEY=
 
 ### ✅ À FAIRE
 
-- Mobile-first (breakpoints : 768px, 1024px)
-- CSS Modules uniquement
+**Architecture :**
 - Server Components par défaut
-- TypeScript strict
-- Validation serveur + client
+- `'use client'` uniquement si nécessaire (state, events, context)
+- Route groups pour organisation
+- Middleware pour protection routes
+
+**Styling :**
+- CSS pur avec CSS variables (NO Tailwind)
+- Mobile-first (breakpoints : 768px, 1024px)
+- Design tokens dans `variables.css`
+
+**TypeScript :**
+- Mode strict
+- Types Supabase générés
+- Constantes typées (`as const`)
+- Validation runtime + TypeScript
+
+**Naming :**
+- Composants : `PascalCase`
+- API : `route.ts`
+- Constantes : `SCREAMING_SNAKE_CASE`
+- Interfaces : `PascalCase` (Note, Database)
+
+**Code Quality :**
+- Validation serveur ET client
+- Error handling avec fallbacks
+- Constantes centralisées (pas de duplication)
+- Comments en français
 
 ### ❌ À NE PAS FAIRE
 
 - Tailwind CSS
-- Over-engineering
+- Over-engineering (KISS)
 - Composants sur-génériques
-- Ignorer les maquettes
+- Ignorer maquettes
+- Duplication constantes
+- `'use client'` inutile
 
 ---
 
