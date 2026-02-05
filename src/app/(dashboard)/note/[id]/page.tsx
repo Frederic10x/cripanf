@@ -375,8 +375,8 @@ export default function NoteDetailPage({
                   </button>
                 </div>
                 <div className={styles.noteHeaderBottom}>
-                  <div className={styles.categoryBadge}>
-                    <Icon className={styles.categoryIcon} />
+                  <div className={`${styles.categoryBadge} ${styles[note.category]}`}>
+                    <Icon className={`${styles.categoryIcon} ${styles[note.category]}`} />
                     <span>{icons[note.category].label.toUpperCase()}</span>
                   </div>
                   <div className={styles.noteMetadata}>
@@ -423,7 +423,7 @@ export default function NoteDetailPage({
                 {/* Current Category Section */}
                 <div className={styles.categorySection}>
                   <div className={styles.currentCategory}>
-                    <Icon className={styles.currentIcon} />
+                    <Icon className={`${styles.currentIcon} ${styles[note.category]}`} />
                     Catégorie actuelle :
                     <span>{CATEGORY_LABELS[note.category]}</span>
                   </div>

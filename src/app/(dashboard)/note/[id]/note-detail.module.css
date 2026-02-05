@@ -171,18 +171,52 @@
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
-  background: #fff4ed;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 700;
-  color: #ff6b00;
   letter-spacing: 0.5px;
   width: fit-content;
+}
+
+.categoryBadge.todo {
+  background: rgba(255, 101, 66, 0.15);
+  color: var(--category-todo);
+}
+
+.categoryBadge.done {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--category-done);
+}
+
+.categoryBadge.recurring {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--category-recurring);
+}
+
+.categoryBadge.waiting_followup {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--category-waiting);
 }
 
 .categoryIcon {
   width: 17px;
   height: 17px;
+}
+
+.categoryIcon.todo {
+  color: var(--category-todo);
+}
+
+.categoryIcon.done {
+  color: var(--category-done);
+}
+
+.categoryIcon.recurring {
+  color: var(--category-recurring);
+}
+
+.categoryIcon.waiting_followup {
+  color: var(--category-waiting);
 }
 
 /* Note Metadata */
@@ -273,6 +307,10 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 12px;
+
+  @media (width >= 992px) {
+    margin-bottom: 20px;
+  }
 }
 
 .insightsLabel {
@@ -318,14 +356,35 @@
   font-weight: normal;
 }
 
+.currentIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.currentIcon.todo {
+  color: var(--category-todo);
+}
+
+.currentIcon.done {
+  color: var(--category-done);
+}
+
+.currentIcon.recurring {
+  color: var(--category-recurring);
+}
+
+.currentIcon.waiting_followup {
+  color: var(--category-waiting);
+}
+
 .recategorizeButtonNew {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
   background: transparent;
-  border: 1px solid #d084ff;
-  border-radius: 20px;
+  border: 2px solid hsla(271, 81%, 56%, 30%);
+  border-radius: 5px;
   font-size: 11px;
   font-weight: 700;
   color: #9333ea;
