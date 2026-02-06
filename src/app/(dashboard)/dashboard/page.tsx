@@ -362,6 +362,7 @@ export default function DashboardPage() {
                     excerpt={getExcerpt(note.content, 80)}
                     category={note.category}
                     updatedAt={note.updated_at}
+                    onUpdate={fetchNotes}
                   />
                 ))}
               </div>
@@ -377,6 +378,7 @@ export default function DashboardPage() {
                   excerpt={getExcerpt(note.content, 80)}
                   category={note.category}
                   updatedAt={note.updated_at}
+                  onUpdate={fetchNotes}
                 />
               ))}
             </div>
@@ -425,6 +427,7 @@ export default function DashboardPage() {
                   excerpt={getExcerpt(note.content, 80)}
                   category={note.category}
                   updatedAt={note.updated_at}
+                  onUpdate={fetchNotes}
                 />
               ))}
             </div>
