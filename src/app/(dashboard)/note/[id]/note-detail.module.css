@@ -155,12 +155,10 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  flex-direction: row-reverse;
   margin-bottom: 30px;
   flex-wrap: wrap;
 
   @media (width >= 992px) {
-    flex-direction: row;
     gap: 20px;
   }
 }

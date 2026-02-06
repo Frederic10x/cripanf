@@ -299,12 +299,15 @@
 }
 
 .mobileHeaderSearch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: none;
   border: none;
   color: var(--color-text);
   cursor: pointer;
   padding: var(--spacing-xs);
-  font-size: 1.25rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,7 +363,6 @@
 }
 
 .categoryPillActive {
-  background: var(--color-primary);
   color: white;
 }
 
