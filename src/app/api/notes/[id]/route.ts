@@ -87,7 +87,7 @@ export async function PATCH(
 
     // Parser le body
     const body = await request.json();
-    const { category, title, content, insights } = body;
+    const { category, title, content, insights, tags } = body;
 
     // Construire l'objet de mise à jour
     const updates: Partial<Note> = {};
@@ -144,6 +144,22 @@ export async function PATCH(
         );
       }
       updates.insights = insights;
+    }
+
+    if (tags !== undefined) {
+      if (tags !== null && !Array.isArray(tags)) {
+        return NextResponse.json(
+          { error: "Les tags doivent être un tableau ou null" },
+          { status: 400 },
+        );
+      }
+      if (tags !== null && !tags.every((tag: unknown) => typeof tag === "string")) {
+        return NextResponse.json(
+          { error: "Tous les tags doivent être des chaînes" },
+          { status: 400 },
+        );
+      }
+      updates.tags = tags;
     }
 
     // Vérifier qu'il y a au moins une mise à jour

@@ -67,7 +67,7 @@ export async function DELETE(
     // Mettre à jour chaque note pour enlever le tag
     if (notes && notes.length > 0) {
       const updatePromises = notes.map((note) => {
-        const updatedTags = (note.tags || []).filter((t) => t !== tag.name);
+        const updatedTags = (note.tags || []).filter((t: string) => t !== tag.name);
         return supabase
           .from("notes")
           .update({ tags: updatedTags })

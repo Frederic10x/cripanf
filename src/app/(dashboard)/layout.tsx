@@ -5,11 +5,11 @@ import { DashboardProvider, useDashboard } from './DashboardContext';
 import styles from './layout.module.css';
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
-  const { setSelectedCategory } = useDashboard();
+  const { setSelectedCategory, setSelectedTags } = useDashboard();
 
   return (
     <div className={styles.layout}>
-      <Sidebar onCategoryChange={setSelectedCategory} />
+      <Sidebar onCategoryChange={setSelectedCategory} onTagsChange={setSelectedTags} />
       <main className={styles.main}>
         {children}
       </main>

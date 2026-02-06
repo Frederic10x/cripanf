@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./Sidebar.module.css";
@@ -9,17 +9,113 @@ import TodosIcon from "../icons/TodosIcon";
 import DoneIcon from "../icons/DoneIcon";
 import RecurringIcon from "../icons/RecurringIcon";
 import WaitingFollowupIcon from "../icons/WaitingFollowupIcon";
-interface SidebarProps {
-  onCategoryChange?: (category: string | null) => void;
+
+interface UserTag {
+  id: string;
+  name: string;
+  user_id: string;
+  created_at: string;
 }
 
-export default function Sidebar({ onCategoryChange }: SidebarProps) {
+interface SidebarProps {
+  onCategoryChange?: (category: string | null) => void;
+  onTagsChange?: (tags: string[]) => void;
+}
+
+export default function Sidebar({
+  onCategoryChange,
+  onTagsChange,
+}: SidebarProps) {
   const [activeItem, setActiveItem] = useState("all");
+  const [tags, setTags] = useState<UserTag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [hoveredTag, setHoveredTag] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [tagToDelete, setTagToDelete] = useState<UserTag | null>(null);
+
+  useEffect(() => {
+    fetchTags();
+
+    // Écouter l'événement de création de tag
+    const handleTagCreated = () => {
+      fetchTags();
+    };
+
+    window.addEventListener("tag-created", handleTagCreated);
+
+    return () => {
+      window.removeEventListener("tag-created", handleTagCreated);
+    };
+  }, []);
+
+  async function fetchTags() {
+    try {
+      const response = await fetch("/api/tags");
+      if (response.ok) {
+        const data = await response.json();
+        setTags(data.tags || []);
+      }
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+    }
+  }
 
   const handleItemClick = (id: string, category: string | null) => {
     setActiveItem(id);
+    setSelectedTags([]);
     if (onCategoryChange) {
       onCategoryChange(category);
+    }
+    if (onTagsChange) {
+      onTagsChange([]);
+    }
+  };
+
+  const handleTagClick = (tagName: string) => {
+    let newSelectedTags: string[];
+    if (selectedTags.includes(tagName)) {
+      newSelectedTags = selectedTags.filter((t) => t !== tagName);
+    } else {
+      newSelectedTags = [...selectedTags, tagName];
+    }
+    setSelectedTags(newSelectedTags);
+    if (onTagsChange) {
+      onTagsChange(newSelectedTags);
+    }
+  };
+
+  const handleDeleteClick = (tag: UserTag, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTagToDelete(tag);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!tagToDelete) return;
+
+    try {
+      const response = await fetch(`/api/tags/${tagToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setTags(tags.filter((t) => t.id !== tagToDelete.id));
+        setSelectedTags(selectedTags.filter((t) => t !== tagToDelete.name));
+        if (onTagsChange && selectedTags.includes(tagToDelete.name)) {
+          const newSelectedTags = selectedTags.filter(
+            (t) => t !== tagToDelete.name,
+          );
+          onTagsChange(newSelectedTags);
+        }
+        setShowDeleteModal(false);
+        setTagToDelete(null);
+      } else {
+        const error = await response.json();
+        alert(error.error || "Erreur lors de la suppression du tag");
+      }
+    } catch (error) {
+      console.error("Error deleting tag:", error);
+      alert("Erreur lors de la suppression du tag");
     }
   };
 
@@ -83,6 +179,68 @@ export default function Sidebar({ onCategoryChange }: SidebarProps) {
           })}
         </ul>
       </nav>
+
+      <nav className={styles.section}>
+        <h2 className={styles.sectionTitle}>Tags</h2>
+        <div className={styles.tagsList}>
+          {tags.length === 0 ? (
+            <p className={styles.noTagsText}>Aucun tag</p>
+          ) : (
+            tags.map((tag) => (
+              <div
+                key={tag.id}
+                className={`${styles.tagItem} ${
+                  selectedTags.includes(tag.name) ? styles.tagItemActive : ""
+                }`}
+                onClick={() => handleTagClick(tag.name)}
+                onMouseEnter={() => setHoveredTag(tag.id)}
+                onMouseLeave={() => setHoveredTag(null)}
+              >
+                <span className={styles.tagName}>#{tag.name}</span>
+                {hoveredTag === tag.id && (
+                  <Image
+                    src="/svg/bin.svg"
+                    alt="Delete"
+                    width={14}
+                    height={14}
+                    className={styles.tagDeleteIcon}
+                    onClick={(e) => handleDeleteClick(tag, e)}
+                  />
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </nav>
+
+      {showDeleteModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3 className={styles.modalTitle}>Supprimer le tag ?</h3>
+            <p className={styles.modalText}>
+              Le tag &quot;{tagToDelete?.name}&quot; sera supprimé de toutes les
+              notes qui l&apos;utilisent.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelButton}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setTagToDelete(null);
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                className={styles.modalDeleteButton}
+                onClick={handleConfirmDelete}
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

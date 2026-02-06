@@ -5,6 +5,8 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 interface DashboardContextType {
   selectedCategory: string | null;
   setSelectedCategory: (category: string | null) => void;
+  selectedTags: string[];
+  setSelectedTags: (tags: string[]) => void;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(
@@ -13,9 +15,10 @@ const DashboardContext = createContext<DashboardContextType | undefined>(
 
 export function DashboardProvider({ children }: { children: ReactNode }) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   return (
-    <DashboardContext.Provider value={{ selectedCategory, setSelectedCategory }}>
+    <DashboardContext.Provider value={{ selectedCategory, setSelectedCategory, selectedTags, setSelectedTags }}>
       {children}
     </DashboardContext.Provider>
   );

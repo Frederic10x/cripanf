@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
-  const { selectedCategory, setSelectedCategory } = useDashboard();
+  const { selectedCategory, setSelectedCategory, selectedTags } = useDashboard();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [mobileCategory, setMobileCategory] = useState<Category | null>(null);
@@ -30,7 +30,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchNotes();
-  }, []);
+  }, [selectedCategory, selectedTags]);
 
   useEffect(() => {
     filterNotes();
@@ -57,7 +57,21 @@ export default function DashboardPage() {
 
   const fetchNotes = async () => {
     try {
-      const response = await fetch("/api/notes");
+      const params = new URLSearchParams();
+
+      // Ajouter le filtre catégorie (desktop uniquement, mobile utilise le filtre local)
+      if (selectedCategory) {
+        params.append("category", selectedCategory);
+      }
+
+      // Ajouter le filtre tags
+      if (selectedTags.length > 0) {
+        params.append("tags", selectedTags.join(","));
+      }
+
+      const url = `/api/notes${params.toString() ? `?${params.toString()}` : ""}`;
+      const response = await fetch(url);
+
       if (response.ok) {
         const data = await response.json();
         setNotes(data.notes || []);
@@ -330,7 +344,7 @@ export default function DashboardPage() {
           <div className={styles.empty}>
             <div className={styles.emptyIcon}>📝</div>
             <p className={styles.emptyText}>
-              {searchQuery || selectedCategory || mobileCategory
+              {searchQuery || selectedCategory || mobileCategory || selectedTags.length > 0
                 ? "Aucune note trouvée"
                 : "Aucune note pour le moment"}
             </p>

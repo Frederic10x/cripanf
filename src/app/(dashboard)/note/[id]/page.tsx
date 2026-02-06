@@ -45,8 +45,18 @@ export default function NoteDetailPage({
   const [isRecategorizing, setIsRecategorizing] = useState(false);
   const [showRecategorizeMenu, setShowRecategorizeMenu] = useState(false);
   const [showManualCategoryMenu, setShowManualCategoryMenu] = useState(false);
+  const [showTagsMenu, setShowTagsMenu] = useState(false);
+  const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+  const [showSelectTagsModal, setShowSelectTagsModal] = useState(false);
+  const [newTagName, setNewTagName] = useState("");
+  const [availableTags, setAvailableTags] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const recategorizeMenuRef = useRef<HTMLDivElement>(null);
+  const tagsMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -70,16 +80,32 @@ export default function NoteDetailPage({
         setShowRecategorizeMenu(false);
         setShowManualCategoryMenu(false);
       }
+      if (
+        tagsMenuRef.current &&
+        !tagsMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowTagsMenu(false);
+      }
     };
 
-    if (showProfileMenu || showRecategorizeMenu || showManualCategoryMenu) {
+    if (
+      showProfileMenu ||
+      showRecategorizeMenu ||
+      showManualCategoryMenu ||
+      showTagsMenu
+    ) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showProfileMenu, showRecategorizeMenu, showManualCategoryMenu]);
+  }, [
+    showProfileMenu,
+    showRecategorizeMenu,
+    showManualCategoryMenu,
+    showTagsMenu,
+  ]);
 
   const fetchNote = async (id: string) => {
     try {
@@ -186,7 +212,7 @@ export default function NoteDetailPage({
   };
 
   const handleManualCategoryChange = async (
-    category: "todo" | "done" | "recurring" | "waiting_followup"
+    category: "todo" | "done" | "recurring" | "waiting_followup",
   ) => {
     if (!note) return;
 
@@ -243,6 +269,111 @@ export default function NoteDetailPage({
       router.push("/login");
     } catch (error) {
       console.error("Error logging out:", error);
+    }
+  };
+
+  const fetchAvailableTags = async () => {
+    setIsLoadingTags(true);
+    try {
+      const response = await fetch("/api/tags");
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableTags(data.tags || []);
+      }
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+    } finally {
+      setIsLoadingTags(false);
+    }
+  };
+
+  const handleOpenSelectTagsModal = async () => {
+    setShowTagsMenu(false);
+    await fetchAvailableTags();
+    setSelectedTags(note?.tags || []);
+    setShowSelectTagsModal(true);
+  };
+
+  const handleCreateTag = async () => {
+    if (!newTagName.trim()) {
+      alert("Le nom du tag ne peut pas être vide");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/tags", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newTagName.trim() }),
+      });
+
+      if (response.ok) {
+        const newTag = await response.json();
+        const updatedTags = [...(note?.tags || []), newTag.name];
+
+        const updateResponse = await fetch(`/api/notes/${noteId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ tags: updatedTags }),
+        });
+
+        if (updateResponse.ok) {
+          const updatedNote = await updateResponse.json();
+          setNote(updatedNote);
+          setNewTagName("");
+          setShowCreateTagModal(false);
+
+          // Notifier la sidebar qu'un nouveau tag a été créé
+          window.dispatchEvent(
+            new CustomEvent("tag-created", { detail: newTag }),
+          );
+        } else {
+          const error = await updateResponse.json();
+          alert(error.error || "Erreur lors de la mise à jour");
+        }
+      } else {
+        const error = await response.json();
+        alert(error.error || "Erreur lors de la création du tag");
+      }
+    } catch (error) {
+      console.error("Error creating tag:", error);
+      alert("Erreur lors de la création du tag");
+    }
+  };
+
+  const handleSaveSelectedTags = async () => {
+    try {
+      const updateResponse = await fetch(`/api/notes/${noteId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tags: selectedTags }),
+      });
+
+      if (updateResponse.ok) {
+        const updatedNote = await updateResponse.json();
+        setNote(updatedNote);
+        setShowSelectTagsModal(false);
+      } else {
+        const error = await updateResponse.json();
+        alert(error.error || "Erreur lors de la mise à jour");
+      }
+    } catch (error) {
+      console.error("Error updating tags:", error);
+      alert("Erreur lors de la mise à jour des tags");
+    }
+  };
+
+  const toggleTagSelection = (tagName: string) => {
+    if (selectedTags.includes(tagName)) {
+      setSelectedTags(selectedTags.filter((t) => t !== tagName));
+    } else {
+      setSelectedTags([...selectedTags, tagName]);
     }
   };
 
@@ -418,8 +549,12 @@ export default function NoteDetailPage({
                   </button>
                 </div>
                 <div className={styles.noteHeaderBottom}>
-                  <div className={`${styles.categoryBadge} ${styles[note.category]}`}>
-                    <Icon className={`${styles.categoryIcon} ${styles[note.category]}`} />
+                  <div
+                    className={`${styles.categoryBadge} ${styles[note.category]}`}
+                  >
+                    <Icon
+                      className={`${styles.categoryIcon} ${styles[note.category]}`}
+                    />
                     <span>{icons[note.category].label.toUpperCase()}</span>
                   </div>
                   <div className={styles.noteMetadata}>
@@ -466,14 +601,21 @@ export default function NoteDetailPage({
                 {/* Current Category Section */}
                 <div className={styles.categorySection}>
                   <div className={styles.currentCategory}>
-                    <Icon className={`${styles.currentIcon} ${styles[note.category]}`} />
+                    <Icon
+                      className={`${styles.currentIcon} ${styles[note.category]}`}
+                    />
                     Catégorie actuelle :
                     <span>{CATEGORY_LABELS[note.category]}</span>
                   </div>
-                  <div className={styles.recategorizeWrapper} ref={recategorizeMenuRef}>
+                  <div
+                    className={styles.recategorizeWrapper}
+                    ref={recategorizeMenuRef}
+                  >
                     <button
                       className={styles.recategorizeButtonNew}
-                      onClick={() => setShowRecategorizeMenu(!showRecategorizeMenu)}
+                      onClick={() =>
+                        setShowRecategorizeMenu(!showRecategorizeMenu)
+                      }
                       disabled={isRecategorizing}
                     >
                       <RecurringIcon className={styles.recategorizeIcon} />
@@ -532,17 +674,81 @@ export default function NoteDetailPage({
                         </button>
                         <button
                           className={`${styles.categoryMenuItem} ${styles.categoryMenuItemRecurring}`}
-                          onClick={() => handleManualCategoryChange("recurring")}
+                          onClick={() =>
+                            handleManualCategoryChange("recurring")
+                          }
                         >
                           <RecurringIcon className={styles.categoryMenuIcon} />
                           <span>Tâches cycliques</span>
                         </button>
                         <button
                           className={`${styles.categoryMenuItem} ${styles.categoryMenuItemWaiting}`}
-                          onClick={() => handleManualCategoryChange("waiting_followup")}
+                          onClick={() =>
+                            handleManualCategoryChange("waiting_followup")
+                          }
                         >
-                          <WaitingFollowupIcon className={styles.categoryMenuIcon} />
+                          <WaitingFollowupIcon
+                            className={styles.categoryMenuIcon}
+                          />
                           <span>Attente de retour</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tags Section */}
+                <div className={styles.tagsSection}>
+                  <div className={styles.tagsHeader}>
+                    <span className={styles.tagsLabel}>Tags :</span>
+                    <div className={styles.tagsList}>
+                      {note.tags && note.tags.length > 0 ? (
+                        note.tags.map((tag, index) => (
+                          <span key={index} className={styles.tag}>
+                            #{tag}
+                          </span>
+                        ))
+                      ) : (
+                        <span className={styles.noTags}>Aucun tag</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className={styles.tagsButtonWrapper} ref={tagsMenuRef}>
+                    <button
+                      className={styles.manageTagsButton}
+                      onClick={() => setShowTagsMenu(!showTagsMenu)}
+                    >
+                      <EditIcon className={styles.editIcon} />
+                      <span>GÉRER LES TAGS</span>
+                    </button>
+                    {showTagsMenu && (
+                      <div className={styles.tagsMenu}>
+                        <button
+                          className={styles.tagsMenuItem}
+                          onClick={() => {
+                            setShowTagsMenu(false);
+                            setShowCreateTagModal(true);
+                          }}
+                        >
+                          <Image
+                            src="/svg/ai.svg"
+                            alt="Create"
+                            width={16}
+                            height={16}
+                          />
+                          <span>Créer un nouveau tag</span>
+                        </button>
+                        <button
+                          className={styles.tagsMenuItem}
+                          onClick={handleOpenSelectTagsModal}
+                        >
+                          <Image
+                            src="/svg/edit.svg"
+                            alt="Select"
+                            width={16}
+                            height={16}
+                          />
+                          <span>Sélectionner tags existants</span>
                         </button>
                       </div>
                     )}
@@ -573,6 +779,83 @@ export default function NoteDetailPage({
                   onClick={handleDelete}
                 >
                   Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showCreateTagModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+              <h3 className={styles.modalTitle}>Créer un nouveau tag</h3>
+              <input
+                type="text"
+                className={styles.tagInput}
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                placeholder="Nom du tag"
+                maxLength={30}
+              />
+              <div className={styles.modalActions}>
+                <button
+                  className={styles.modalCancelButton}
+                  onClick={() => {
+                    setShowCreateTagModal(false);
+                    setNewTagName("");
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  className={styles.modalPrimaryButton}
+                  onClick={handleCreateTag}
+                >
+                  Créer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showSelectTagsModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+              <h3 className={styles.modalTitle}>Sélectionner des tags</h3>
+              {isLoadingTags ? (
+                <p className={styles.modalText}>Chargement...</p>
+              ) : availableTags.length === 0 ? (
+                <p className={styles.modalText}>
+                  Aucun tag n&apos;existe actuellement
+                </p>
+              ) : (
+                <div className={styles.tagsSelectList}>
+                  {availableTags.map((tag) => (
+                    <label key={tag.id} className={styles.tagCheckboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={selectedTags.includes(tag.name)}
+                        onChange={() => toggleTagSelection(tag.name)}
+                        className={styles.tagCheckbox}
+                      />
+                      <span>{tag.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              <div className={styles.modalActions}>
+                <button
+                  className={styles.modalCancelButton}
+                  onClick={() => setShowSelectTagsModal(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  className={styles.modalPrimaryButton}
+                  onClick={handleSaveSelectedTags}
+                  disabled={isLoadingTags}
+                >
+                  Valider
                 </button>
               </div>
             </div>

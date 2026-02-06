@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get("category");
     const search = searchParams.get("search");
+    const tagsParam = searchParams.get("tags");
     const limit = parseInt(searchParams.get("limit") || "20");
     const offset = parseInt(searchParams.get("offset") || "0");
 
@@ -34,6 +35,14 @@ export async function GET(request: NextRequest) {
     // Filtrer par catégorie si fourni
     if (category) {
       query = query.eq("category", category);
+    }
+
+    // Filtrer par tags si fourni (comma-separated)
+    if (tagsParam) {
+      const tags = tagsParam.split(",").map((t) => t.trim()).filter(Boolean);
+      if (tags.length > 0) {
+        query = query.overlaps("tags", tags);
+      }
     }
 
     // Recherche full-text si fourni
