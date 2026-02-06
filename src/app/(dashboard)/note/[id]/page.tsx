@@ -731,7 +731,7 @@ export default function NoteDetailPage({
                           }}
                         >
                           <Image
-                            src="/svg/ai.svg"
+                            src="/svg/plus.svg"
                             alt="Create"
                             width={16}
                             height={16}
@@ -743,7 +743,7 @@ export default function NoteDetailPage({
                           onClick={handleOpenSelectTagsModal}
                         >
                           <Image
-                            src="/svg/edit.svg"
+                            src="/svg/todos.svg"
                             alt="Select"
                             width={16}
                             height={16}
