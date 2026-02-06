@@ -38,4 +38,12 @@ export interface Note {
   updated_at: string;
   is_voice_note: boolean;
   insights: string[] | null;
+  tags?: string[] | null;
+}
+
+export interface UserTag {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
 }

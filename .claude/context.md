@@ -53,6 +53,13 @@ interface Note {
   updated_at: string;
   is_voice_note: boolean;
   insights: string[] | null; // Insights générés par l'IA
+  tags: string[];
+}
+interface UserTag {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
 }
 ```
 
