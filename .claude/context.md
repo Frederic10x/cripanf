@@ -25,14 +25,14 @@ Application de gestion de notes avec catégorisation automatique par IA (Groq). 
 ### Couleurs principales
 
 ```css
---color-primary: #ff6542;          /* Orange - boutons, accents */
---color-primary-light: #fff4f0;    /* Orange clair - backgrounds */
+--color-primary: #ff6542; /* Orange - boutons, accents */
+--color-primary-light: #fff4f0; /* Orange clair - backgrounds */
 
 /* Categories */
---category-todo: #ff6542;          /* À faire - Orange */
---category-done: #22c55e;          /* Fait - Vert */
---category-recurring: #3b82f6;     /* Cycliques - Bleu */
---category-waiting: #8b5cf6;       /* Attente - Violet */
+--category-todo: #ff6542; /* À faire - Orange */
+--category-done: #22c55e; /* Fait - Vert */
+--category-recurring: #3b82f6; /* Cycliques - Bleu */
+--category-waiting: #8b5cf6; /* Attente - Violet */
 ```
 
 **Voir `src/styles/variables.css` pour le design system complet** (typography, spacing, shadows, etc.)
@@ -72,19 +72,24 @@ src/
 ### Patterns & Conventions
 
 **Route Groups :**
+
 - `(auth)` : publiques | `(dashboard)` : protégées
 
 **State Management :**
+
 - `DashboardContext` + custom hook `useDashboard()`
 
 **Composants :**
+
 - Server Components par défaut, `'use client'` pour interactivité uniquement
 
 **Types :**
+
 - Constantes centralisées : `CATEGORIES`, `CATEGORY_LABELS`, `CATEGORY_COLORS`, `CATEGORY_ICONS`
 - Type `Category` dérivé : `typeof CATEGORIES[keyof typeof CATEGORIES]`
 
 **Imports :**
+
 - Alias `@/` → `src/`
 
 ---
@@ -92,16 +97,19 @@ src/
 ## Fonctionnalités
 
 ### Gestion de notes
+
 - CRUD complet avec vérification ownership (user_id)
 - Support notes vocales (flag `is_voice_note`)
 - Recherche et filtrage par catégorie
 
 ### Catégorisation automatique (IA)
+
 - API `/api/categorize` utilise Groq (llama-3.1-8b-instant)
 - Input : contenu → Output : `{ category, title }`
 - Fallback graceful si erreur Groq : `{ category: 'todo', title: content.slice(0,60) }`
 
 ### Authentification
+
 - Middleware Next.js + Supabase Auth
 - Routes protégées : `/dashboard/*`, `/note/*`
 - Redirections auto : non connecté → `/login`, connecté → `/dashboard`
@@ -130,19 +138,20 @@ is_voice_note BOOLEAN
 ## APIs
 
 ### Supabase Auth
+
 - Package : `@supabase/ssr`
 - Middleware protège `/dashboard/*`, `/note/*`
 - Matcher exclut : `/api`, `/_next`, statiques
 
 ### API Routes Notes
 
-| Route | Méthode | Description |
-|-------|---------|-------------|
-| `/api/notes` | GET | Liste notes user |
-| `/api/notes` | POST | Créer note |
-| `/api/notes/[id]` | GET | Détail note |
-| `/api/notes/[id]` | PUT | Modifier note |
-| `/api/notes/[id]` | DELETE | Supprimer note |
+| Route             | Méthode | Description      |
+| ----------------- | ------- | ---------------- |
+| `/api/notes`      | GET     | Liste notes user |
+| `/api/notes`      | POST    | Créer note       |
+| `/api/notes/[id]` | GET     | Détail note      |
+| `/api/notes/[id]` | PUT     | Modifier note    |
+| `/api/notes/[id]` | DELETE  | Supprimer note   |
 
 **Toutes les routes vérifient l'authentification et l'ownership.**
 
@@ -171,29 +180,34 @@ GROQ_API_KEY=
 ### ✅ À FAIRE
 
 **Architecture :**
+
 - Server Components par défaut
 - `'use client'` uniquement si nécessaire (state, events, context)
 - Route groups pour organisation
 - Middleware pour protection routes
 
 **Styling :**
+
 - CSS pur avec CSS variables (NO Tailwind)
 - Mobile-first (breakpoints : 768px, 1024px)
 - Design tokens dans `variables.css`
 
 **TypeScript :**
+
 - Mode strict
 - Types Supabase générés
 - Constantes typées (`as const`)
 - Validation runtime + TypeScript
 
 **Naming :**
+
 - Composants : `PascalCase`
 - API : `route.ts`
 - Constantes : `SCREAMING_SNAKE_CASE`
 - Interfaces : `PascalCase` (Note, Database)
 
 **Code Quality :**
+
 - Validation serveur ET client
 - Error handling avec fallbacks
 - Constantes centralisées (pas de duplication)
@@ -207,6 +221,9 @@ GROQ_API_KEY=
 - Ignorer maquettes
 - Duplication constantes
 - `'use client'` inutile
+- Ne jamais créer de fichiers .md de documentation/changelog
+- Pas de IMPLEMENTATION.md, CHANGES.md, README updates, etc.
+- Modifications = code uniquement
 
 ---
 

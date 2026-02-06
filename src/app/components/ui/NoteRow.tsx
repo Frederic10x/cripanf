@@ -43,14 +43,32 @@ export default function NoteRow({
   const router = useRouter();
   const [translateX, setTranslateX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
   const [showCategorySheet, setShowCategorySheet] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const touchStartTime = useRef(0);
   const rowRef = useRef<HTMLElement>(null);
-  const swipeThreshold = 80;
+  const swipeThreshold = 60;
   const maxSwipe = 160;
 
+  // Close other revealed rows when this one opens
+  useEffect(() => {
+    const handleCloseOthers = (e: CustomEvent) => {
+      if (e.detail.id !== id && isRevealed) {
+        setIsRevealed(false);
+        setTranslateX(0);
+      }
+    };
+
+    window.addEventListener('noterow-reveal' as any, handleCloseOthers);
+    return () => {
+      window.removeEventListener('noterow-reveal' as any, handleCloseOthers);
+    };
+  }, [id, isRevealed]);
+
+  // Handle ESC key and prevent body scroll when modals are open
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -58,6 +76,9 @@ export default function NoteRow({
           setShowDeleteModal(false);
         } else if (showCategorySheet) {
           setShowCategorySheet(false);
+        } else if (isRevealed) {
+          setIsRevealed(false);
+          setTranslateX(0);
         }
       }
     };
@@ -65,17 +86,21 @@ export default function NoteRow({
     if (showDeleteModal || showCategorySheet) {
       document.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
+    } else if (isRevealed) {
+      document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [showDeleteModal, showCategorySheet]);
+  }, [showDeleteModal, showCategorySheet, isRevealed]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (window.innerWidth >= 768) return;
+
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
     touchStartTime.current = Date.now();
     setIsSwiping(true);
   };
@@ -84,12 +109,28 @@ export default function NoteRow({
     if (window.innerWidth >= 768 || !isSwiping) return;
 
     const currentX = e.touches[0].clientX;
-    const diff = touchStartX.current - currentX;
+    const currentY = e.touches[0].clientY;
+    const diffX = touchStartX.current - currentX;
+    const diffY = Math.abs(touchStartY.current - currentY);
 
-    if (diff > 0) {
-      const newTranslateX = Math.min(diff, maxSwipe);
+    // Ignore if this is a vertical scroll
+    if (diffY > Math.abs(diffX) && diffY > 10) {
+      setIsSwiping(false);
+      // Don't reset translateX if already revealed
+      if (!isRevealed) {
+        setTranslateX(0);
+      }
+      return;
+    }
+
+    // Swipe left to reveal actions
+    if (diffX > 0) {
+      const newTranslateX = Math.min(diffX, maxSwipe);
       setTranslateX(newTranslateX);
-    } else {
+    }
+    // Swipe right to close actions
+    else if (diffX < -30 && isRevealed) {
+      setIsRevealed(false);
       setTranslateX(0);
     }
   };
@@ -100,19 +141,29 @@ export default function NoteRow({
     setIsSwiping(false);
 
     if (translateX > swipeThreshold) {
+      // Reveal actions
       setTranslateX(maxSwipe);
+      setIsRevealed(true);
+
+      // Notify other rows to close
+      window.dispatchEvent(new CustomEvent('noterow-reveal', { detail: { id } }));
     } else {
+      // Reset
       setTranslateX(0);
+      setIsRevealed(false);
     }
   };
 
   const handleClick = (e: React.MouseEvent) => {
-    if (translateX > 0) {
+    // Close revealed actions on click
+    if (isRevealed) {
       e.stopPropagation();
+      setIsRevealed(false);
       setTranslateX(0);
       return;
     }
 
+    // Prevent navigation if just finished swiping
     const timeSinceStart = Date.now() - touchStartTime.current;
     if (timeSinceStart < 300 && translateX > 0) {
       return;
@@ -122,11 +173,13 @@ export default function NoteRow({
   };
 
   const handleRecategorize = () => {
+    setIsRevealed(false);
     setTranslateX(0);
     setShowCategorySheet(true);
   };
 
   const handleDelete = () => {
+    setIsRevealed(false);
     setTranslateX(0);
     setShowDeleteModal(true);
   };
@@ -200,7 +253,7 @@ export default function NoteRow({
           style={{
             transform: `translateX(-${translateX}px)`,
             transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
-            willChange: 'transform',
+            willChange: isSwiping ? 'transform' : 'auto',
           }}
         >
           <div
@@ -217,7 +270,13 @@ export default function NoteRow({
           <div className={styles.chevron}>›</div>
         </article>
 
-        <div className={styles.actionsContainer}>
+        <div
+          className={styles.actionsContainer}
+          style={{
+            opacity: translateX > 0 || isRevealed ? 1 : 0,
+            pointerEvents: translateX > swipeThreshold / 2 || isRevealed ? 'auto' : 'none',
+          }}
+        >
           <button
             className={styles.recategorizeButton}
             onClick={handleRecategorize}
