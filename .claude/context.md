@@ -98,6 +98,22 @@ Suppression logique ou physique (vérifier l'implémentation)
 Corps: `{ content: string }`
 Retourne: `{ category, title, insights }`
 
+### GET /api/tags
+
+Retourne: `{ tags: UserTag[] }` - tous les tags de l'utilisateur, triés alphabétiquement
+
+### POST /api/tags
+
+Corps: `{ name: string }`
+- Normalise le nom (trim + lowercase)
+- Valide longueur (1-30 caractères)
+- Contrôle UNIQUE (erreur 409 si existe déjà)
+- Retourne: UserTag créé (201)
+
+### DELETE /api/tags/[id]
+
+Supprime le tag et l'enlève de toutes les notes de l'utilisateur
+
 ## Composants UI Principaux
 
 ### NoteRow (Balayage Mobile)
@@ -117,6 +133,8 @@ Retourne: `{ category, title, insights }`
 ### Sidebar
 
 - Navigation filtre par catégorie
+- Gestion des tags utilisateur: affiche liste triée alphabétiquement, permet création et suppression
+- Callback `onTagsChange` pour filtrer les notes par tags
 
 ### MobileNav
 
@@ -147,3 +165,4 @@ Retourne: `{ category, title, insights }`
 - Timestamps au format ISO 8601
 - Recherche full-text ilike sur title + content
 - Insights vides = null (pas de tableau vide)
+- Tags: tableau de strings normalisées (lowercase), suppression en cascade (tag supprimé → enlever de toutes les notes)
