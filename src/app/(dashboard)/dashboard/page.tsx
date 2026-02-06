@@ -12,12 +12,17 @@ import { Note, Category } from "@/lib/types/note";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./dashboard.module.css";
 
+interface UserTag {
+  id: string;
+  name: string;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [notes, setNotes] = useState<Note[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
-  const { selectedCategory, setSelectedCategory, selectedTags } = useDashboard();
+  const { selectedCategory, setSelectedCategory, selectedTags, setSelectedTags } = useDashboard();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [mobileCategory, setMobileCategory] = useState<Category | null>(null);
@@ -26,6 +31,10 @@ export default function DashboardPage() {
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [showLayoutMenu, setShowLayoutMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showTagsSheet, setShowTagsSheet] = useState(false);
+  const [availableTags, setAvailableTags] = useState<UserTag[]>([]);
+  const [localSelectedTags, setLocalSelectedTags] = useState<string[]>([]);
+  const [tagsLoading, setTagsLoading] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,6 +63,24 @@ export default function DashboardPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showProfileMenu]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showTagsSheet) {
+        setShowTagsSheet(false);
+      }
+    };
+
+    if (showTagsSheet) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [showTagsSheet]);
 
   const fetchNotes = async () => {
     try {
@@ -144,6 +171,42 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error logging out:", error);
     }
+  };
+
+  const fetchTags = async () => {
+    setTagsLoading(true);
+    try {
+      const response = await fetch("/api/tags");
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableTags(data.tags || []);
+      } else {
+        console.error("Failed to fetch tags");
+      }
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+    } finally {
+      setTagsLoading(false);
+    }
+  };
+
+  const handleOpenTagsSheet = () => {
+    setLocalSelectedTags(selectedTags);
+    fetchTags();
+    setShowTagsSheet(true);
+  };
+
+  const handleToggleTag = (tagName: string) => {
+    setLocalSelectedTags((prev) =>
+      prev.includes(tagName)
+        ? prev.filter((t) => t !== tagName)
+        : [...prev, tagName]
+    );
+  };
+
+  const handleApplyTagsFilter = () => {
+    setSelectedTags(localSelectedTags);
+    setShowTagsSheet(false);
   };
 
   const categories: { id: string; label: string; value: Category | null }[] = [
@@ -315,8 +378,37 @@ export default function DashboardPage() {
 
         {/* Mobile Title Section */}
         <section className={styles.mobileTitleSection}>
-          <h1 className={styles.title}>Mes notes</h1>
-          <p className={styles.subtitle}>Catégorisées par l'IA</p>
+          <div className={styles.mobileTitleContent}>
+            <div>
+              <h1 className={styles.title}>Mes notes</h1>
+              <p className={styles.subtitle}>Catégorisées par l'IA</p>
+            </div>
+            <button
+              className={styles.tagsFilterButton}
+              onClick={handleOpenTagsSheet}
+              aria-label="Filtrer par tags"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className={styles.filterIcon}
+              >
+                <path
+                  d="M2 4h16M5 10h10M8 16h4"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {selectedTags.length > 0 && (
+                <span className={styles.tagsBadge}>{selectedTags.length}</span>
+              )}
+            </button>
+          </div>
         </section>
 
         {/* Mobile Category Pills */}
@@ -448,6 +540,59 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Tags Filter Bottom Sheet */}
+      {showTagsSheet && (
+        <div
+          className={styles.bottomSheetOverlay}
+          onClick={() => setShowTagsSheet(false)}
+        >
+          <div
+            className={styles.bottomSheet}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tags-sheet-title"
+          >
+            <div className={styles.bottomSheetHandle} />
+            <h3 id="tags-sheet-title" className={styles.bottomSheetTitle}>
+              Filtrer par tags
+            </h3>
+            <div className={styles.tagsListContainer}>
+              {tagsLoading ? (
+                <div className={styles.tagsLoading}>Chargement...</div>
+              ) : availableTags.length === 0 ? (
+                <div className={styles.tagsEmpty}>Aucun tag disponible</div>
+              ) : (
+                <div className={styles.tagsList}>
+                  {availableTags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      className={`${styles.tagButton} ${
+                        localSelectedTags.includes(tag.name)
+                          ? styles.tagButtonActive
+                          : ""
+                      }`}
+                      onClick={() => handleToggleTag(tag.name)}
+                    >
+                      <span className={styles.tagCheckbox}>
+                        {localSelectedTags.includes(tag.name) && "✓"}
+                      </span>
+                      <span className={styles.tagName}>{tag.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              className={styles.applyButton}
+              onClick={handleApplyTagsFilter}
+            >
+              Appliquer
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
